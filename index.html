@@ -87,6 +87,7 @@ function normalizeDb(){
   db.pyqAttempts.forEach(function(x,i){if(!x.id)x.id=uid("pyq"+i);});
 }
 normalizeDb();
+save();
 function addDays(s,n){var d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function nextSunday(s){var d=new Date(s+"T12:00:00"),n=(7-d.getDay())%7;if(n===0)n=7;d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch];});}
