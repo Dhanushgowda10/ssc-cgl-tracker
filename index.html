@@ -42,7 +42,7 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 .empty{padding:20px;border:1px dashed #304867;border-radius:10px;color:var(--muted);text-align:center}
 @media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:850px){.app{display:block}aside{width:auto;height:auto;position:relative;padding:13px}.brand{padding:6px 8px 12px}nav{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}.cards,.two{grid-template-columns:1fr}.calendar{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto;padding-bottom:5px}.weekdays{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto}.weekday{white-space:nowrap}.cal{min-height:95px}main{padding:17px}.topline{flex-direction:column}.topmeta{justify-content:flex-start}.heat{grid-template-columns:repeat(14,1fr)}}
-</style></head>
+.streak-wrap{display:flex;gap:9px;margin-top:14px;overflow-x:auto;padding-bottom:3px}.streak-labels{width:18px;display:grid;grid-template-rows:repeat(7,1fr);gap:5px;flex:0 0 18px;color:#7f92b5;font-size:9px;font-weight:800;align-items:center;text-align:center}.streak-columns{display:grid;grid-template-columns:repeat(12,20px);gap:6px;min-width:max-content}.streak-week{display:grid;grid-template-rows:repeat(7,20px);gap:5px}.streak-day{width:20px;height:20px;border-radius:4px;background:#17243a;border:1px solid #203451;transition:transform .15s,border-color .15s}.streak-day:hover{transform:scale(1.12);border-color:#6f8fd8}.streak-day.l1{background:#38527c}.streak-day.l2{background:#5573a9}.streak-day.l3{background:#7694d9}.streak-day.l4{background:#a7bfff}.streak-legend{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:9px;color:#7f92b5;font-size:11px}.streak-s{display:inline-block;width:12px;height:12px;border-radius:3px;background:#17243a;border:1px solid #203451}.streak-s.l1{background:#38527c}.streak-s.l2{background:#5573a9}.streak-s.l3{background:#7694d9}.streak-s.l4{background:#a7bfff}</style></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
 const S = {
@@ -110,15 +110,38 @@ function dashboard(p){
   p.innerHTML="<div class='topline'><div><h1>SSC CGL Tracker 2027</h1><p class='muted page-sub'>Your preparation command center • 8 hours/day • Sunday revision • full mocks after 50%</p></div><div class='topmeta'><span class='badge'>📅 "+new Date(today()+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})+"</span></div></div>"+
   "<div class='card section' style='background:linear-gradient(135deg,#172d50,#0f1f37 55%,#142442);border-color:#45689c;box-shadow:0 20px 55px #0006'><div class='row' style='border-bottom:0;align-items:flex-start'><div><div class='kicker'>🔥 CONSISTENCY COMMAND CENTER</div><div style='font-size:25px;font-weight:900;margin-top:6px'>"+headline+"</div><div class='muted' style='margin-top:5px'>Your goal is simple: show up today, then repeat it tomorrow.</div></div><div style='text-align:right'><div style='font-size:35px;font-weight:900;line-height:1'>🔥 "+cs.current+"</div><div class='muted' style='font-size:12px'>day streak</div></div></div>"+
   "<div class='grid cards' style='margin-top:17px'><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>BEST STREAK</div><div class='big'>🏆 "+cs.best+" days</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>THIS WEEK</div><div class='big'>"+Math.round(cs.weekMinutes/60*10)/10+"h / 56h</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>ACTIVE DAYS</div><div class='big'>"+cs.activeDays+" / 7</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>WEEKLY GOAL</div><div class='big'>"+weekPct+"%</div><div class='bar'><i style='width:"+weekPct+"%'></i></div></div></div>"+
-  "<div class='notice' style='margin-top:15px;border-left-color:#8aa7ff'><b>🎯 Today's challenge:</b> complete your planned study blocks before the day ends. A missed day breaks the streak; a completed day keeps it alive.</div></div>"+
-  "<div class='grid cards section'><div class=card><div class=kicker>READINESS</div><div class=big>"+readiness()+"%</div><div class=bar><i style='width:"+readiness()+"%'></i></div></div>"+
-  "<div class=card><div class=kicker>SYLLABUS</div><div class=big>"+syllabusPct()+"%</div><div class=muted>"+completedTopics()+"/"+totalTopics()+" topics</div></div>"+
-  "<div class=card><div class=kicker>STUDY HOURS</div><div class=big>"+Math.round(totalMinutes()/60)+"</div><div class=muted>total logged</div></div>"+
-  "<div class=card><div class=kicker>REVISION QUEUE</div><div class=big>"+r.length+"</div><div class=muted>"+r.filter(function(x){return x.over;}).length+" overdue</div></div></div>"+
-  "<div class='grid two section'><div class=card><h2>⚠️ Weak Topics</h2>"+(w.length?"<table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+w.map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class=bad>"+x.acc+"%</td></tr>";}).join("")+"</table>":"<div class=muted>Log PYQ accuracy to detect weak chapters.</div>")+"</div>"+
-  "<div class=card><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.type+"</span></div>";}).join("")||"<div class=good>Revision queue clear.</div>")+"</div></div>";
+  "<div class='notice' style='margin-top:15px;border-left-color:#8aa7ff'><b>🎯 Today's challenge:</b> complete your planned study blocks before the day ends. A missed day breaks the streak; a completed day keeps it alive.</div>"+
+  "<div class='card' style='margin-top:13px;background:#0d1a2e;border-color:#2e476d'><div class='row' style='border-bottom:0'><div><div class='kicker'>🔥 YOUR LAST 12 WEEKS</div><h2 style='margin:4px 0 0'>Every box is a day you showed up.</h2></div><span class='badge'>84 days</span></div>"+streakBoxes()+"</div></div>"+
+  "<div class='grid cards section'><div class='card'><div class='kicker'>READINESS</div><div class='big'>"+readiness()+"%</div><div class='bar'><i style='width:"+readiness()+"%'></i></div></div>"+
+  "<div class='card'><div class='kicker'>SYLLABUS</div><div class='big'>"+syllabusPct()+"%</div><div class='muted'>"+completedTopics()+"/"+totalTopics()+" topics</div></div>"+
+  "<div class='card'><div class='kicker'>STUDY HOURS</div><div class='big'>"+Math.round(totalMinutes()/60)+"</div><div class='muted'>total logged</div></div>"+
+  "<div class='card'><div class='kicker'>REVISION QUEUE</div><div class='big'>"+r.length+"</div><div class='muted'>"+r.filter(function(x){return x.over;}).length+" overdue</div></div></div>"+
+  "<div class='grid two section'><div class='card'><h2>⚠️ Weak Topics</h2>"+(w.length?"<table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+w.map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class='bad'>"+x.acc+"%</td></tr>";}).join("")+"</table>":"<div class='muted'>Log PYQ accuracy to detect weak chapters.</div>")+"</div>"+
+  "<div class='card'><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class='"+(x.over?"bad":"warn")+"'>"+x.type+"</span></div>";}).join("")||"<div class='good'>Revision queue clear.</div>")+"</div></div>";
 }
 
+function streakBoxes(){
+  var days=[],d=new Date();
+  d.setDate(d.getDate()-83);
+  for(var i=0;i<84;i++){
+    var date=d.toISOString().slice(0,10);
+    var minutes=db.study.filter(function(x){return x.date===date;}).reduce(function(a,x){return a+Number(x.minutes||0);},0);
+    var level=minutes>=480?4:minutes>=240?3:minutes>=60?2:minutes>0?1:0;
+    days.push({date:date,minutes:minutes,level:level});
+    d.setDate(d.getDate()+1);
+  }
+  var cols="";
+  for(var w=0;w<12;w++){
+    cols+="<div class='streak-week'>";
+    for(var k=0;k<7;k++){
+      var x=days[w*7+k];
+      cols+="<div class='streak-day l"+x.level+"' title='"+x.date+" • "+Math.round(x.minutes/60*10)/10+"h studied'></div>";
+    }
+    cols+="</div>";
+  }
+  return "<div class='streak-wrap'><div class='streak-labels'><span>M</span><span>W</span><span>F</span><span>S</span><span>S</span></div><div class='streak-columns'>"+cols+"</div></div>"+
+    "<div class='streak-legend'><span>Less</span><i class='streak-s l0'></i><i class='streak-s l1'></i><i class='streak-s l2'></i><i class='streak-s l3'></i><i class='streak-s l4'></i><span>8h+</span></div>";
+}
 
 function topicOptions(subject,selected){
   return (S[subject]||[]).map(function(t){return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";}).join("");
