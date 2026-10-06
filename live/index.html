@@ -42,7 +42,7 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 .empty{padding:20px;border:1px dashed #304867;border-radius:10px;color:var(--muted);text-align:center}
 @media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:850px){.app{display:block}aside{width:auto;height:auto;position:relative;padding:13px}.brand{padding:6px 8px 12px}nav{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}.cards,.two{grid-template-columns:1fr}.calendar{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto;padding-bottom:5px}.weekdays{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto}.weekday{white-space:nowrap}.cal{min-height:95px}main{padding:17px}.topline{flex-direction:column}.topmeta{justify-content:flex-start}.heat{grid-template-columns:repeat(14,1fr)}}
-.streak-wrap{display:flex;gap:9px;margin-top:14px;overflow-x:auto;padding-bottom:3px}.streak-labels{width:29px;display:grid;grid-template-rows:repeat(7,1fr);gap:5px;flex:0 0 29px;color:#7f92b5;font-size:10px;font-weight:800;align-items:center;text-align:center}.streak-columns{display:grid;grid-template-columns:repeat(12,20px);gap:6px;min-width:max-content}.streak-week{display:grid;grid-template-rows:repeat(7,20px);gap:5px}.streak-day{width:20px;height:20px;border-radius:4px;background:#17243a;border:1px solid #203451;transition:transform .15s,border-color .15s}.streak-day:hover{transform:scale(1.12);border-color:#6f8fd8}.streak-day.l1{background:#38527c}.streak-day.l2{background:#5573a9}.streak-day.l3{background:#7694d9}.streak-day.l4{background:#a7bfff}.streak-legend{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:9px;color:#7f92b5;font-size:11px}.streak-s{display:inline-block;width:12px;height:12px;border-radius:3px;background:#17243a;border:1px solid #203451}.streak-s.l1{background:#38527c}.streak-s.l2{background:#5573a9}.streak-s.l3{background:#7694d9}.streak-s.l4{background:#a7bfff}</style></head>
+.streak-wrap{display:flex;gap:9px;margin-top:14px;overflow-x:auto;padding-bottom:3px}.streak-labels{width:29px;display:grid;grid-template-rows:repeat(7,1fr);gap:5px;flex:0 0 29px;color:#7f92b5;font-size:10px;font-weight:800;align-items:center;text-align:center}.streak-columns{display:grid;grid-template-columns:repeat(12,20px);gap:6px;min-width:max-content}.streak-week{display:grid;grid-template-rows:repeat(7,20px);gap:5px}.streak-day{width:20px;height:20px;border-radius:4px;background:#17243a;border:1px solid #203451;transition:transform .15s,border-color .15s}.streak-day:hover{transform:scale(1.12);border-color:#6f8fd8}.streak-day.l1{background:#38527c}.streak-day.l2{background:#5573a9}.streak-day.l3{background:#7694d9}.streak-day.l4{background:#a7bfff}.streak-legend{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:9px;color:#7f92b5;font-size:11px}.streak-s{display:inline-block;width:12px;height:12px;border-radius:3px;background:#17243a;border:1px solid #203451}.streak-s.l1{background:#38527c}.streak-s.l2{background:#5573a9}.streak-s.l3{background:#7694d9}.streak-s.l4{background:#a7bfff}.subject-card{transition:.18s}.subject-card:hover{transform:translateY(-2px);border-color:#486690}.topic-row:hover{background:#122139}@media(max-width:850px){.subject-card{cursor:default}.topic-row{align-items:flex-start!important;flex-direction:column;gap:10px}.topic-row>div:last-child{min-width:0!important;width:100%;justify-content:flex-start!important}}</style></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
 const S = {
@@ -213,9 +213,57 @@ function planner(p){
   document.getElementById("resetPlan").addEventListener("click",function(){if(confirm("Reset today's selected topics and completed blocks?")){delete db.plans[day];save();planner(p);}});
 }
 function syllabus(p){
-  p.innerHTML="<h1>Syllabus</h1><p class=muted>Complete a topic → weekly review on the next Sunday + monthly review 30 days later.</p><div class=card><table><tr><th>Subject</th><th>Topic</th><th>Status</th><th>Weekly</th><th>Monthly</th><th>PYQ</th></tr>"+
-  db.topics.map(function(x,i){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td><select class=status data-i="+i+"><option>Not started</option><option>Learning</option><option>Completed</option></select></td><td>"+(x.weeklyDone?"✅ ":"")+(x.weekly||"—")+"</td><td>"+(x.monthlyDone?"✅ ":"")+(x.monthly||"—")+"</td><td>"+(x.acc==null?"—":x.acc+"%")+"</td></tr>";}).join("")+"</table></div>";
-  p.querySelectorAll(".status").forEach(function(s){var i=Number(s.dataset.i);s.value=db.topics[i].status;s.addEventListener("change",function(){var x=db.topics[i],old=x.status;x.status=s.value;if(s.value==="Completed"&&old!=="Completed"){x.studied=today();x.weekly=nextSunday(x.studied);x.monthly=addDays(x.studied,30);x.weeklyDone=false;x.monthlyDone=false;}save();render();});});
+  var subjects=Object.keys(S);
+  var total=db.topics.length,completed=db.topics.filter(function(x){return x.status==="Completed";}).length,learning=db.topics.filter(function(x){return x.status==="Learning";}).length;
+  var overall=total?Math.round(completed/total*100):0;
+  function subjectStats(s){
+    var arr=db.topics.filter(function(x){return x.s===s;});
+    var done=arr.filter(function(x){return x.status==="Completed";}).length;
+    var learn=arr.filter(function(x){return x.status==="Learning";}).length;
+    return {total:arr.length,done:done,learn:learn,pct:arr.length?Math.round(done/arr.length*100):0};
+  }
+  p.innerHTML="<div class='topline'><div><h1>Syllabus Tracker</h1><p class='muted page-sub'>Your syllabus is the backbone of the tracker. Finish topics here and the rest of the system follows automatically.</p></div>"+
+    "<div class='topmeta'><span class='badge'>✅ "+completed+" completed</span><span class='badge'>🟡 "+learning+" learning</span><span class='badge'>📚 "+total+" total topics</span></div></div>"+
+    "<div class='card section' style='background:linear-gradient(135deg,#162b4b,#0e1d34 60%,#142440);border-color:#3f5d8d'>"+
+      "<div class='topline'><div><div class='kicker'>OVERALL SYLLABUS PROGRESS</div><div style='font-size:34px;font-weight:900;margin-top:5px'>"+overall+"%</div><div class='muted'>"+completed+" of "+total+" topics completed</div></div><div style='font-size:50px;font-weight:900'>📚</div></div>"+
+      "<div class='bar' style='margin-top:14px;height:12px'><i style='width:"+overall+"%'></i></div>"+
+      "<div class='row' style='border-bottom:0;margin-top:8px'><span class='muted'>🟢 Completed topics drive mock unlock</span><span class='"+(overall>=50?"good":"warn")+"'>"+(overall>=50?"🎯 Full mocks unlocked":"🔒 "+(50-overall)+"% to mock unlock")+"</span></div>"+
+    "</div>"+
+    "<div class='grid cards section'>"+
+      subjects.map(function(s){var st=subjectStats(s);return "<div class='card subject-card' data-subject='"+s+"' style='cursor:pointer'><div class='row' style='border-bottom:0'><div><div class='kicker'>"+s.toUpperCase()+"</div><div style='font-size:25px;font-weight:900;margin-top:3px'>"+st.pct+"%</div></div><span class='badge'>"+st.done+"/"+st.total+"</span></div><div class='bar' style='margin:12px 0 8px'><i style='width:"+st.pct+"%'></i></div><div class='muted' style='font-size:12px'>"+st.learn+" learning • "+(st.total-st.done-st.learn)+" not started</div></div>";}).join("")+
+    "</div>"+
+    "<div class='card section'><div class='topline'><div><div class='kicker'>TOPIC TRACKER</div><h2 style='margin:4px 0 0'>Choose a subject</h2></div><div style='min-width:230px'><select id='syllabusSubject'>"+subjects.map(function(s){return "<option>"+s+"</option>";}).join("")+"</select></div></div>"+
+      "<div id='topicPanel' style='margin-top:14px'></div></div>"+
+    "<div class='notice section'>💡 <b>How this works:</b> <b>Not started → Learning → Completed.</b> When a topic becomes Completed, it gets its next Sunday weekly revision and a 30-day monthly revision automatically. Its progress also counts toward the 50% full-mock unlock.</div>";
+
+  var select=document.getElementById("syllabusSubject"),panel=document.getElementById("topicPanel");
+  function renderTopics(){
+    var s=select.value,arr=db.topics.filter(function(x){return x.s===s;});
+    var st=subjectStats(s);
+    panel.innerHTML="<div class='row' style='border-bottom:1px solid #243653'><div><h2 style='margin:0'>"+s+" Topics</h2><div class='muted'>"+st.done+" completed • "+st.learn+" learning • "+st.pct+"% complete</div></div><span class='badge'>"+st.pct+"%</span></div>"+
+      arr.map(function(x){
+        var i=db.topics.indexOf(x);
+        var revStatus=(x.weekly||x.monthly)?((x.weeklyDone&&x.monthlyDone)?"✅ Fully revised":(x.weeklyDone?"🔁 Weekly done":"")):"";
+        return "<div class='row topic-row' style='padding:13px 0;align-items:center'><div style='min-width:0;flex:1'><div style='font-weight:850'>"+esc(x.topic)+"</div><div class='muted' style='font-size:12px;margin-top:3px'>"+(x.status==="Completed"?"Completed on "+esc(x.studied||""):(x.status==="Learning"?"Currently learning":"Not started"))+(revStatus?" • "+revStatus:"")+"</div></div><div style='display:flex;gap:8px;align-items:center;min-width:230px;justify-content:flex-end'><select class='topic-status' data-i='"+i+"' style='max-width:150px'><option>Not started</option><option>Learning</option><option>Completed</option></select><span class='badge'>"+(x.acc==null?"No PYQ":x.acc+"% PYQ")+"</span></div></div>";
+      }).join("");
+    panel.querySelectorAll(".topic-status").forEach(function(sel){
+      var i=Number(sel.dataset.i);sel.value=db.topics[i].status;
+      sel.addEventListener("change",function(){
+        var x=db.topics[i],old=x.status,v=sel.value;
+        x.status=v;
+        if(v==="Completed"&&old!=="Completed"){
+          x.studied=today();x.weekly=nextSunday(x.studied);x.monthly=addDays(x.studied,30);x.weeklyDone=false;x.monthlyDone=false;
+        }
+        if(v!=="Completed"&&old==="Completed"){
+          x.studied=null;x.weekly=null;x.monthly=null;x.weeklyDone=false;x.monthlyDone=false;
+        }
+        save();render();
+      });
+    });
+  }
+  select.addEventListener("change",renderTopics);
+  p.querySelectorAll(".subject-card").forEach(function(card){card.addEventListener("click",function(){select.value=card.dataset.subject;renderTopics();window.scrollTo({top:document.getElementById("topicPanel").offsetTop-120,behavior:"smooth"});});});
+  renderTopics();
 }
 function study(p){
   var totalQ=db.study.reduce(function(s,x){return s+Number(x.questions||0);},0);
