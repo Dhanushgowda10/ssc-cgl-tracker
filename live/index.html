@@ -50,6 +50,8 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 .study-hero{background:linear-gradient(135deg,#172d50,#0f1e36 58%,#142743)!important;border-color:#486a9e!important}.study-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.study-summary>div{background:#0d1a2e;border:1px solid #294465;border-radius:12px;padding:13px;min-width:0}.metric-note{font-size:12px;color:var(--muted)}.session-pill{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;color:#cbd8f3;font-size:11px;font-weight:800}.study-history{overflow-x:auto}.study-history table{min-width:900px}.study-history td{vertical-align:middle}.study-actions{display:flex;gap:6px;justify-content:flex-end}.study-plan-list{display:grid;gap:8px}.study-plan-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#0d1a2e;border:1px solid #253d60;border-radius:10px}.study-plan-row>div{min-width:0}.study-plan-topic{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.study-form-actions{display:flex;gap:8px;flex-wrap:wrap}.topic-mini{font-size:11px;color:var(--muted);margin-top:5px}@media(max-width:850px){.study-summary{grid-template-columns:repeat(2,1fr)}.study-plan-row{align-items:flex-start;flex-direction:column}.study-actions{justify-content:flex-start}}
 
 .rev-insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:13px}.rev-insights>div{background:#0d1a2e;border:1px solid #294465;border-radius:10px;padding:10px;min-width:0}.rev-label{font-size:10px;font-weight:800;letter-spacing:.08em;color:#8fa2c5;text-transform:uppercase}.rev-value{font-size:18px;font-weight:900;margin-top:4px}.rev-guidance{margin-top:13px}.rev-status{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;font-size:11px;font-weight:800}@media(max-width:850px){.rev-insights{grid-template-columns:repeat(2,1fr)}}
+
+.dash-rev-card{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #243653}.dash-rev-card:last-child{border-bottom:0}.dash-rev-main{min-width:0;flex:1}.dash-rev-topic{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dash-rev-meta{font-size:11px;color:var(--muted);margin-top:3px}.dash-rev-reason{font-size:11px;margin-top:5px}.dash-rev-action{flex:0 0 auto}.dash-rev-action button{padding:7px 9px;font-size:12px}
 </style></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
@@ -139,6 +141,24 @@ function dashboard(p){
   var r=revisions(),w=db.topics.filter(function(x){return x.acc!=null&&Number(x.acc)<70;}).sort(function(a,b){return a.acc-b.acc;}).slice(0,5);
   var cs=consistencyStats(),weekTarget=3360,weekPct=Math.min(100,Math.round(cs.weekMinutes/weekTarget*100));
   var headline=cs.current===0?"🌱 Your streak starts with today.":cs.current<3?"⚡ You’ve started. Come back tomorrow.":cs.current<7?"💪 You’re building momentum. Protect it.":cs.current<14?"🔥 One week is in sight. Keep showing up.":cs.current<30?"🚀 Two weeks strong. Keep the chain alive.":"🏆 30+ days. You’re building a serious habit.";
+
+  function revisionIntel(item){
+    var x=item.x,studyRows=db.study.filter(function(z){return z.topicId===x.id||(z.subject+"|"+z.topic)===x.id;}),minutes=studyRows.reduce(function(s,z){return s+Number(z.minutes||0);},0);
+    var pyqs=db.pyqAttempts.filter(function(z){return z.topicId===x.id;}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))||Number(a.createdAt||0)-Number(b.createdAt||0);});
+    var acc=pyqs.length?Number(pyqs[pyqs.length-1].accuracy||0):(x.acc==null?null:Number(x.acc)),studyHours=Math.round(minutes/60*10)/10;
+    var reason;
+    if(item.over) reason=acc==null?"Overdue • no PYQ data yet":acc<70?"Overdue • weak PYQ accuracy ("+acc+"%)":acc<85?"Overdue • accuracy needs work ("+acc+"%)":"Overdue • keep retention strong";
+    else reason=acc==null?"Due soon • no PYQ data yet":acc<70?"Due soon • weak PYQ accuracy ("+acc+"%)":acc<85?"Due soon • accuracy needs work ("+acc+"%)":"Due soon • accuracy is strong";
+    return {acc:acc,studyHours:studyHours,reason:reason};
+  }
+  function nextRevisionHtml(){
+    if(!r.length)return "<div class='good'>Revision queue clear.</div>";
+    return r.slice(0,7).map(function(item){
+      var z=revisionIntel(item);
+      return "<div class='dash-rev-card'><div class='dash-rev-main'><div class='dash-rev-topic'>"+esc(item.x.s)+" • "+esc(item.x.topic)+"</div><div class='dash-rev-meta'>"+item.type+" • "+(item.over?"Scheduled "+item.date:item.date)+" • "+z.studyHours+"h studied"+(z.acc!=null?" • "+z.acc+"% latest PYQ":"")+"</div><div class='dash-rev-reason "+(item.over||((z.acc!=null)&&z.acc<70)?"bad":z.acc!=null&&z.acc<85?"warn":"muted")+"'>"+z.reason+"</div></div><div class='dash-rev-action'><button class='btn alt dash-rev-open' data-id='"+encodeURIComponent(item.x.id)+"' data-type='"+item.type+"' type='button'>Open</button></div></div>";
+    }).join("");
+  }
+
   p.innerHTML="<div class='topline'><div><h1>SSC CGL Tracker 2027</h1><p class='muted page-sub'>Your preparation command center • 8 hours/day • Sunday revision • full mocks after 50%</p></div><div class='topmeta'><span class='badge'>📅 "+new Date(today()+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})+"</span></div></div>"+
   "<div class='card section' style='background:linear-gradient(135deg,#172d50,#0f1f37 55%,#142442);border-color:#45689c;box-shadow:0 20px 55px #0006'><div class='row' style='border-bottom:0;align-items:flex-start'><div><div class='kicker'>🔥 CONSISTENCY COMMAND CENTER</div><div style='font-size:25px;font-weight:900;margin-top:6px'>"+headline+"</div><div class='muted' style='margin-top:5px'>Your goal is simple: show up today, then repeat it tomorrow.</div></div><div style='text-align:right'><div style='font-size:35px;font-weight:900;line-height:1'>🔥 "+cs.current+"</div><div class='muted' style='font-size:12px'>day streak</div></div></div>"+
   "<div class='grid cards' style='margin-top:17px'><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>BEST STREAK</div><div class='big'>🏆 "+cs.best+" days</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>THIS WEEK</div><div class='big'>"+Math.round(cs.weekMinutes/60*10)/10+"h / 56h</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>ACTIVE DAYS</div><div class='big'>"+cs.activeDays+" / 7</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>WEEKLY GOAL</div><div class='big'>"+weekPct+"%</div><div class='bar'><i style='width:"+weekPct+"%'></i></div></div></div>"+
@@ -149,9 +169,18 @@ function dashboard(p){
   "<div class='card'><div class='kicker'>STUDY HOURS</div><div class='big'>"+Math.round(totalMinutes()/60)+"</div><div class='muted'>total logged</div></div>"+
   "<div class='card'><div class='kicker'>REVISION QUEUE</div><div class='big'>"+r.length+"</div><div class='muted'>"+r.filter(function(x){return x.over;}).length+" overdue</div></div></div>"+
   "<div class='grid two section'><div class='card'><h2>⚠️ Weak Topics</h2>"+(w.length?"<table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+w.map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class='bad'>"+x.acc+"%</td></tr>";}).join("")+"</table>":"<div class='muted'>Log PYQ accuracy to detect weak chapters.</div>")+"</div>"+
-  "<div class='card'><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class='"+(x.over?"bad":"warn")+"'>"+x.type+"</span></div>";}).join("")||"<div class='good'>Revision queue clear.</div>")+"</div></div>";
-}
+  "<div class='card'><div class='row' style='border-bottom:0'><div><div class='kicker'>🔁 NEXT REVISION</div><h2 style='margin:4px 0 0'>What needs attention next</h2></div><span class='badge'>"+(r.length?r.length+" in queue":"Clear")+"</span></div>"+nextRevisionHtml()+"</div></div>";
 
+  p.querySelectorAll(".dash-rev-open").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      location.hash="revision";
+      setTimeout(function(){
+        var targetId=decodeURIComponent(btn.dataset.id),targetType=btn.dataset.type;
+        startRevision(targetId,targetType);
+      },0);
+    });
+  });
+}
 function streakBoxes(){
   var days=[],d=new Date();
   d.setDate(d.getDate()-83);
