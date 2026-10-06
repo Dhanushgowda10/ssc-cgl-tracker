@@ -52,9 +52,9 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 .rev-insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:13px}.rev-insights>div{background:#0d1a2e;border:1px solid #294465;border-radius:10px;padding:10px;min-width:0}.rev-label{font-size:10px;font-weight:800;letter-spacing:.08em;color:#8fa2c5;text-transform:uppercase}.rev-value{font-size:18px;font-weight:900;margin-top:4px}.rev-guidance{margin-top:13px}.rev-status{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;font-size:11px;font-weight:800}@media(max-width:850px){.rev-insights{grid-template-columns:repeat(2,1fr)}}
 
 .dash-rev-card{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #243653}.dash-rev-card:last-child{border-bottom:0}.dash-rev-main{min-width:0;flex:1}.dash-rev-topic{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dash-rev-meta{font-size:11px;color:var(--muted);margin-top:3px}.dash-rev-reason{font-size:11px;margin-top:5px}.dash-rev-action{flex:0 0 auto}.dash-rev-action button{padding:7px 9px;font-size:12px}
-</style><style>
+</style><style>.cloud-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cloud-card{background:linear-gradient(145deg,#142a49,#0e1d33 72%);border-color:#486a9e}.cloud-status{padding:12px 14px;background:#0b1729;border:1px solid #294465;border-radius:10px;margin-top:12px}.cloud-actions{display:flex;gap:8px;flex-wrap:wrap}.cloud-help{font-size:12px;color:var(--muted);line-height:1.55}@media(max-width:850px){.cloud-grid{grid-template-columns:1fr}}</style><style>
 .cloud-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cloud-card{background:linear-gradient(145deg,#142a49,#0e1d33 72%);border-color:#486a9e}.cloud-status{padding:12px 14px;background:#0b1729;border:1px solid #294465;border-radius:10px;margin-top:12px}.cloud-actions{display:flex;gap:8px;flex-wrap:wrap}.cloud-help{font-size:12px;color:var(--muted);line-height:1.55}.cloud-danger{font-size:12px;color:#ffb4c1}@media(max-width:850px){.cloud-grid{grid-template-columns:1fr}}
-</style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head>
+</style><script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
 const S = {
@@ -69,197 +69,157 @@ try{db=JSON.parse(localStorage.getItem("cgl2027")||"null");}catch(e){db=null;}
 if(!db || !Array.isArray(db.topics)){db={topics:makeTopics(),study:[],mocks:[],settings:{hours:8}};}
 if(!db.study)db.study=[]; if(!db.mocks)db.mocks=[]; if(!db.settings)db.settings={hours:8};
 
-var CLOUD_CONFIG_KEY="cgl2027_cloud_config",CLOUD_META_KEY="cgl2027_cloud_meta";
-var cloudClient=null,cloudSession=null,cloudAutoSync=false,cloudSyncTimer=null,cloudPollTimer=null,cloudApplying=false,cloudSyncBusy=false;
 
-function cloudConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||"null")||{};}catch(e){return {};}}
-function cloudMeta(){try{return JSON.parse(localStorage.getItem(CLOUD_META_KEY)||"null")||{};}catch(e){return {};}}
-function setCloudMeta(m){localStorage.setItem(CLOUD_META_KEY,JSON.stringify(m||{}));}
-function cloudSessionUser(){return cloudSession&&cloudSession.user?cloudSession.user:null;}
-function cloudReady(){return !!(cloudClient&&cloudSessionUser());}
-function saveCloudConfig(url,key){localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify({url:String(url||"").trim().replace(/\/$/,""),key:String(key||"").trim()}));}
-function ensureCloudClient(){
-  if(!window.supabase||!window.supabase.createClient)throw new Error("Supabase library could not load. Check your internet connection and refresh.");
-  var cfg=cloudConfig();
-  if(!cfg.url||!cfg.key)throw new Error("Enter your Supabase Project URL and publishable/anon key first.");
-  if(!/^https:\/\/[A-Za-z0-9.-]+\.supabase\.co(?:\/)?$/.test(cfg.url))throw new Error("Project URL should look like https://your-project.supabase.co");
-  if(!cloudClient||cloudClient.__cglUrl!==cfg.url||cloudClient.__cglKey!==cfg.key){
-    cloudClient=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    cloudClient.__cglUrl=cfg.url;cloudClient.__cglKey=cfg.key;
-  }
-  return cloudClient;
+var FIREBASE_CONFIG_KEY="cgl2027_firebase_config",FIREBASE_META_KEY="cgl2027_firebase_meta";
+var firebaseApp=null,firebaseAuth=null,firebaseStore=null,firebaseUser=null,firebaseAutoSync=false,firebaseSyncTimer=null,firebaseUnsubscribe=null,firebaseApplying=false,firebaseSyncBusy=false;
+
+function firebaseConfig(){try{return JSON.parse(localStorage.getItem(FIREBASE_CONFIG_KEY)||"null")||{};}catch(e){return {};}}
+function firebaseMeta(){try{return JSON.parse(localStorage.getItem(FIREBASE_META_KEY)||"null")||{};}catch(e){return {};}}
+function setFirebaseMeta(m){localStorage.setItem(FIREBASE_META_KEY,JSON.stringify(m||{}));}
+function firebaseUserReady(){return !!(firebaseAuth&&firebaseUser);}
+function saveFirebaseConfig(cfg){localStorage.setItem(FIREBASE_CONFIG_KEY,JSON.stringify(cfg||{}));}
+function ensureFirebase(){
+  if(!window.firebase)throw new Error("Firebase library could not load. Check your internet connection and refresh.");
+  var cfg=firebaseConfig();
+  if(!cfg.apiKey||!cfg.authDomain||!cfg.projectId||!cfg.appId)throw new Error("Enter all required Firebase Web App settings first.");
+  var expected=JSON.stringify(cfg);
+  if(firebaseApp&&firebaseApp.__cglConfig===expected)return firebaseApp;
+  try{firebaseApp=firebase.apps.find(function(a){return a.name==="cglTracker";})||null;}catch(e){firebaseApp=null;}
+  if(!firebaseApp)firebaseApp=firebase.initializeApp(cfg,"cglTracker");
+  firebaseApp.__cglConfig=expected;
+  firebaseAuth=firebase.auth(firebaseApp);
+  firebaseStore=firebase.firestore(firebaseApp);
+  return firebaseApp;
 }
-async function refreshCloudSession(){
-  try{
-    var c=ensureCloudClient(),res=await c.auth.getSession();
-    if(res.error)throw res.error;
-    cloudSession=res.data.session||null;
-    if(cloudSessionUser()){
-      var m=cloudMeta();
-      cloudAutoSync=!!m.autoSync;
-      if(cloudAutoSync)startCloudPolling();
-    }
-    return cloudSession;
-  }catch(e){
-    cloudSession=null;cloudAutoSync=false;stopCloudPolling();
-    return null;
-  }
-}
-function stopCloudPolling(){if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null;}}
-function startCloudPolling(){
-  stopCloudPolling();
-  cloudPollTimer=setInterval(function(){cloudPollRemote().catch(function(e){cloudSetStatus("Cloud check failed: "+e.message,"bad");});},30000);
-}
-function cloudSetStatus(msg,cls){
+function firebaseSetStatus(msg,cls){
   var el=document.getElementById("cloudStatus");
   if(el)el.innerHTML="<span class='"+(cls||"muted")+"'>"+esc(msg)+"</span>";
-  var badge=document.getElementById("cloudStateBadge");
-  if(badge)badge.textContent=msg;
 }
-function cloudSetAccountStatus(){
-  var el=document.getElementById("cloudAccountStatus");
-  if(!el)return;
-  var u=cloudSessionUser(),m=cloudMeta();
-  if(u)el.innerHTML="<b>Signed in:</b> "+esc(u.email||"Account")+" • "+(cloudAutoSync?"🔄 Auto-sync ON":"⏸️ Auto-sync waiting for initial sync");
+function firebaseSetAccountStatus(){
+  var el=document.getElementById("cloudAccountStatus");if(!el)return;
+  var m=firebaseMeta();
+  if(firebaseUser)el.innerHTML="<b>Signed in:</b> "+esc(firebaseUser.email||"Google account")+" • "+(firebaseAutoSync?"🔄 Auto-sync ON":"⏸️ Waiting for initial sync");
   else el.innerHTML="<span class='muted'>Not signed in. Local browser storage is still active.</span>";
-  var email=document.getElementById("cloudEmail");if(email&&u&&!email.value)email.value=u.email||"";
-  var auto=document.getElementById("cloudAutoBadge");if(auto)auto.textContent=cloudAutoSync?"AUTO-SYNC ON":"AUTO-SYNC OFF";
+  var badge=document.getElementById("firebaseAutoBadge");if(badge)badge.textContent=firebaseAutoSync?"AUTO-SYNC ON":"AUTO-SYNC OFF";
 }
-function cloudPayload(){
-  var copy=JSON.parse(JSON.stringify(db));
-  delete copy.cloud;
-  delete copy._cloud;
-  return copy;
+function firebasePayload(){return JSON.parse(JSON.stringify(db));}
+function firebaseDocRef(){
+  if(!firebaseUser)throw new Error("Sign in with Google first.");
+  return firebaseStore.collection("users").doc(firebaseUser.uid);
 }
-function markCloudLinked(remoteMs){
-  var m=cloudMeta();
-  m.autoSync=true;m.lastRemoteUpdatedAt=remoteMs||Date.now();m.lastSyncedAt=Date.now();m.localDirty=false;
-  setCloudMeta(m);cloudAutoSync=true;startCloudPolling();cloudSetAccountStatus();
+function firebaseStopListener(){if(firebaseUnsubscribe){firebaseUnsubscribe();firebaseUnsubscribe=null;}}
+function firebaseStartListener(){
+  firebaseStopListener();
+  if(!firebaseUser||!firebaseAutoSync)return;
+  firebaseUnsubscribe=firebaseDocRef().onSnapshot(function(snap){
+    if(!snap.exists)return;
+    var row=snap.data()||{},ts=row.updatedAt&&row.updatedAt.toMillis?row.updatedAt.toMillis():Number(row.clientUpdatedAt||0);
+    if(!ts)return;
+    var m=firebaseMeta(),known=Number(m.lastRemoteUpdatedAt||0);
+    if(ts<=known)return;
+    if(m.localDirty){
+      firebaseSetStatus("⚠️ Another device has newer data while this device has unsynced changes. Use Sync Now.","warn");
+      return;
+    }
+    if(!row.data||!Array.isArray(row.data.topics))return;
+    firebaseApplying=true;
+    try{db=row.data;normalizeDb();save();}finally{firebaseApplying=false;}
+    m=firebaseMeta();m.lastRemoteUpdatedAt=ts;m.lastSyncedAt=Date.now();m.localDirty=false;setFirebaseMeta(m);
+    render();firebaseSetStatus("🔄 Updated from another device.","good");
+  },function(e){firebaseSetStatus("⚠️ Live sync error: "+e.message,"bad");});
 }
-async function cloudFetchRow(){
-  var c=ensureCloudClient();if(!cloudSessionUser())await refreshCloudSession();
-  if(!cloudSessionUser())throw new Error("Please sign in first.");
-  var res=await c.from("cgl_tracker_data").select("data,updated_at").eq("user_id",cloudSessionUser().id).maybeSingle();
-  if(res.error)throw res.error;
-  return res.data||null;
+function firebaseMarkLinked(remoteMs){
+  var m=firebaseMeta();m.autoSync=true;m.localDirty=false;m.lastRemoteUpdatedAt=Number(remoteMs||Date.now());m.lastSyncedAt=Date.now();setFirebaseMeta(m);
+  firebaseAutoSync=true;firebaseStartListener();firebaseSetAccountStatus();
 }
-async function cloudUpload(){
-  if(!cloudSessionUser())await refreshCloudSession();
-  if(!cloudSessionUser())throw new Error("Please sign in first.");
-  var c=ensureCloudClient();
-  var now=new Date().toISOString();
-  var res=await c.from("cgl_tracker_data").upsert({user_id:cloudSessionUser().id,data:cloudPayload(),updated_at:now},{onConflict:"user_id"});
-  if(res.error)throw res.error;
-  markCloudLinked(Date.parse(now)||Date.now());
-  cloudSetStatus("✅ Uploaded this device to cloud. Future changes will auto-sync.","good");
-}
-async function cloudDownload(){
-  var row=await cloudFetchRow();
-  if(!row)throw new Error("Your cloud account has no tracker data yet. Use “Upload this device” on the device that already has your data.");
-  if(!confirm("Download cloud data to this device? This replaces the current local tracker data. A safety snapshot will be kept in this browser."))return;
-  localStorage.setItem("cgl2027_cloud_pre_pull_backup",JSON.stringify(db));
-  cloudApplying=true;
+async function refreshFirebaseAuth(){
   try{
-    db=row.data;
-    if(!db||!Array.isArray(db.topics))throw new Error("Cloud data is not a valid SSC CGL Tracker backup.");
-    normalizeDb();save();
-  }finally{cloudApplying=false;}
-  markCloudLinked(Date.parse(row.updated_at)||Date.now());
-  render();
-  cloudSetStatus("✅ Cloud data downloaded to this device. Auto-sync is ON.","good");
+    ensureFirebase();
+    if(!window.__cglFirebaseAuthBound){
+      window.__cglFirebaseAuthBound=true;
+      firebaseAuth.onAuthStateChanged(function(u){
+        firebaseUser=u||null;
+        var m=firebaseMeta();firebaseAutoSync=!!m.autoSync;
+        if(firebaseUser&&firebaseAutoSync)firebaseStartListener();else firebaseStopListener();
+        firebaseSetAccountStatus();
+      });
+    }
+    return new Promise(function(resolve){setTimeout(function(){resolve(firebaseUser);},250);});
+  }catch(e){firebaseUser=null;return null;}
 }
-async function cloudPollRemote(){
-  if(!cloudAutoSync||!cloudSessionUser()||cloudSyncBusy)return;
-  var row=await cloudFetchRow();if(!row)return;
-  var remoteMs=Date.parse(row.updated_at)||0,m=cloudMeta(),known=Number(m.lastRemoteUpdatedAt||0);
-  if(remoteMs<=known)return;
-  if(m.localDirty){
-    cloudSetStatus("⚠️ Cloud has newer data while this device also has local changes. Press Sync Now to choose.","warn");
-    return;
-  }
-  cloudApplying=true;
-  try{
-    db=row.data;normalizeDb();save();
-  }finally{cloudApplying=false;}
-  m=cloudMeta();m.lastRemoteUpdatedAt=remoteMs;m.lastSyncedAt=Date.now();m.localDirty=false;setCloudMeta(m);
-  render();
-  cloudSetStatus("🔄 Pulled a newer change from another device.","good");
+async function firebaseSignInGoogle(){
+  var cfg={
+    apiKey:document.getElementById("firebaseApiKey").value.trim(),
+    authDomain:document.getElementById("firebaseAuthDomain").value.trim(),
+    projectId:document.getElementById("firebaseProjectId").value.trim(),
+    storageBucket:document.getElementById("firebaseStorageBucket").value.trim(),
+    messagingSenderId:document.getElementById("firebaseMessagingSenderId").value.trim(),
+    appId:document.getElementById("firebaseAppId").value.trim()
+  };
+  saveFirebaseConfig(cfg);firebaseApp=null;ensureFirebase();
+  var provider=new firebase.auth.GoogleAuthProvider();
+  var res=await firebaseAuth.signInWithPopup(provider);if(res&&res.user)firebaseUser=res.user;
+  firebaseSetStatus("✅ Signed in with Google. Now choose Upload this device on your existing device, or Download cloud on a new device.","good");
+  firebaseSetAccountStatus();
 }
-function scheduleCloudPush(){
-  if(!cloudAutoSync||!cloudSessionUser()||cloudApplying)return;
-  if(cloudSyncTimer)clearTimeout(cloudSyncTimer);
-  cloudSyncTimer=setTimeout(function(){cloudPushSilently();},1200);
+async function firebaseSignOut(){
+  if(firebaseAuth)await firebaseAuth.signOut();
+  firebaseUser=null;firebaseAutoSync=false;firebaseStopListener();
+  var m=firebaseMeta();m.autoSync=false;m.localDirty=false;setFirebaseMeta(m);
+  firebaseSetStatus("Signed out. Local browser data remains on this device.","muted");firebaseSetAccountStatus();
 }
-async function cloudPushSilently(){
-  if(cloudSyncBusy||!cloudAutoSync||!cloudSessionUser())return;
-  cloudSyncBusy=true;
-  try{await cloudUpload();}catch(e){cloudSetStatus("⚠️ Auto-sync failed: "+e.message,"bad");}
-  finally{cloudSyncBusy=false;}
+async function firebaseUpload(){
+  if(!firebaseUser)await refreshFirebaseAuth();
+  if(!firebaseUser)throw new Error("Sign in with Google first.");
+  ensureFirebase();
+  var now=Date.now();
+  await firebaseDocRef().set({data:firebasePayload(),clientUpdatedAt:now,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  firebaseMarkLinked(now);firebaseSetStatus("✅ This device is uploaded. Changes will now sync automatically.","good");
 }
-async function cloudSyncNow(){
-  if(!cloudSessionUser())await refreshCloudSession();
-  if(!cloudSessionUser())throw new Error("Please sign in first.");
-  var row=await cloudFetchRow(),m=cloudMeta(),remoteMs=row?(Date.parse(row.updated_at)||0):0,known=Number(m.lastRemoteUpdatedAt||0);
-  if(!row){
-    await cloudUpload();
-    return;
-  }
+async function firebaseDownload(){
+  if(!firebaseUser)await refreshFirebaseAuth();
+  if(!firebaseUser)throw new Error("Sign in with Google first.");
+  ensureFirebase();
+  var snap=await firebaseDocRef().get();
+  if(!snap.exists)throw new Error("No cloud tracker data exists yet. Upload the device that already has your data first.");
+  var row=snap.data()||{};
+  if(!row.data||!Array.isArray(row.data.topics))throw new Error("Cloud data is not a valid tracker backup.");
+  if(!confirm("Download cloud data to this device? Current local data will be replaced. A safety copy will be kept in this browser."))return;
+  localStorage.setItem("cgl2027_firebase_pre_pull_backup",JSON.stringify(db));
+  firebaseApplying=true;
+  try{db=row.data;normalizeDb();save();}finally{firebaseApplying=false;}
+  var ts=row.updatedAt&&row.updatedAt.toMillis?row.updatedAt.toMillis():Number(row.clientUpdatedAt||Date.now());
+  firebaseMarkLinked(ts);render();firebaseSetStatus("✅ Cloud data downloaded. Auto-sync is now ON.","good");
+}
+function scheduleFirebasePush(){
+  if(!firebaseAutoSync||!firebaseUser||firebaseApplying)return;
+  if(firebaseSyncTimer)clearTimeout(firebaseSyncTimer);
+  firebaseSyncTimer=setTimeout(function(){firebasePushSilently();},1200);
+}
+async function firebasePushSilently(){
+  if(firebaseSyncBusy||!firebaseAutoSync||!firebaseUser)return;
+  firebaseSyncBusy=true;
+  try{await firebaseUpload();}catch(e){firebaseSetStatus("⚠️ Auto-sync failed: "+e.message,"bad");}
+  finally{firebaseSyncBusy=false;}
+}
+async function firebaseSyncNow(){
+  if(!firebaseUser)await refreshFirebaseAuth();
+  if(!firebaseUser)throw new Error("Sign in with Google first.");
+  ensureFirebase();
+  var snap=await firebaseDocRef().get(),m=firebaseMeta(),remoteMs=0;
+  if(!snap.exists){await firebaseUpload();return;}
+  var row=snap.data()||{};remoteMs=row.updatedAt&&row.updatedAt.toMillis?row.updatedAt.toMillis():Number(row.clientUpdatedAt||0);
+  var known=Number(m.lastRemoteUpdatedAt||0);
   if(m.localDirty&&remoteMs>known){
-    var downloadChoice=confirm("Both cloud and this device changed. OK = download cloud data; Cancel = upload this device and make it the newest copy.");
-    if(downloadChoice)await cloudDownload();else await cloudUpload();
+    var download=confirm("Both this device and the cloud changed. OK = download cloud; Cancel = upload this device and make it the newest copy.");
+    if(download)await firebaseDownload();else await firebaseUpload();
     return;
   }
-  if(remoteMs>known&&!m.localDirty){await cloudDownload();return;}
-  await cloudUpload();
+  if(remoteMs>known&&!m.localDirty){await firebaseDownload();return;}
+  await firebaseUpload();
 }
-async function cloudConnectFromForm(){
-  var url=document.getElementById("cloudProjectUrl"),key=document.getElementById("cloudAnonKey");
-  saveCloudConfig(url?url.value:"",key?key.value:"");
-  cloudClient=null;
-  await refreshCloudSession();
-  cloudSetStatus(cloudSessionUser()?"✅ Supabase connected and signed in.":"✅ Supabase project connected. Sign in below.","good");
-  cloudSetAccountStatus();
-}
-async function cloudSignUp(){
-  var email=document.getElementById("cloudEmail").value.trim(),password=document.getElementById("cloudPassword").value;
-  if(!email||!password)throw new Error("Enter email and password.");
-  saveCloudConfig(document.getElementById("cloudProjectUrl").value,document.getElementById("cloudAnonKey").value);
-  var c=ensureCloudClient(),res=await c.auth.signUp({email:email,password:password,options:{emailRedirectTo:location.href.split("#")[0]}});
-  if(res.error)throw res.error;
-  cloudSession=res.data.session||null;
-  if(cloudSessionUser()){
-    await cloudAfterSignIn();
-    cloudSetStatus("✅ Account created and signed in. Upload this device or download cloud data to link it.","good");
-  }else{
-    cloudSetStatus("✅ Account created. Check your email to confirm it, then sign in here.","good");
-  }
-  cloudSetAccountStatus();
-}
-async function cloudSignIn(){
-  var email=document.getElementById("cloudEmail").value.trim(),password=document.getElementById("cloudPassword").value;
-  if(!email||!password)throw new Error("Enter email and password.");
-  saveCloudConfig(document.getElementById("cloudProjectUrl").value,document.getElementById("cloudAnonKey").value);
-  var c=ensureCloudClient(),res=await c.auth.signInWithPassword({email:email,password:password});
-  if(res.error)throw res.error;
-  cloudSession=res.data.session||null;
-  await cloudAfterSignIn();
-  cloudSetStatus("✅ Signed in. Choose Download Cloud on a new device, or Upload this Device on your existing device.","good");
-  cloudSetAccountStatus();
-}
-async function cloudAfterSignIn(){
-  var m=cloudMeta();
-  cloudAutoSync=!!m.autoSync;
-  if(cloudAutoSync)startCloudPolling();
-}
-async function cloudSignOut(){
-  try{if(cloudClient)await cloudClient.auth.signOut();}catch(e){}
-  cloudSession=null;cloudAutoSync=false;stopCloudPolling();
-  var m=cloudMeta();m.autoSync=false;m.localDirty=false;setCloudMeta(m);
-  cloudSetStatus("Signed out. Local browser data remains on this device.","muted");cloudSetAccountStatus();
-}
-function cloudAction(fn){
-  return function(){fn().catch(function(e){cloudSetStatus("⚠️ "+e.message,"bad");});};
-}
+function firebaseAction(fn){return function(){fn().catch(function(e){firebaseSetStatus("⚠️ "+e.message,"bad");});};}
+
 function save(){localStorage.setItem("cgl2027",JSON.stringify(db));if(!cloudApplying&&cloudAutoSync&&cloudSessionUser()){var m=cloudMeta();m.localDirty=true;setCloudMeta(m);scheduleCloudPush();}}
 function uid(prefix){return String(prefix||"id")+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);}
 function localISO(d){
@@ -915,37 +875,40 @@ function analytics(p){
   "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>🧠 WHAT THE DATA SAYS</div><h2 style='margin:4px 0 0'>Next-step guidance</h2></div><span class='badge'>Auto-generated</span></div><div class='row'><span>📚 Syllabus progress</span><b>"+syllabusPct()+"%</b></div><div class='row'><span>🔁 Revision queue</span><b>"+revisions().length+" topics</b></div><div class='row'><span>📝 PYQ attempts saved</span><b>"+pAll.length+"</b></div><div class='notice' style='margin-top:13px'>"+(weak.length?"<b>Focus recommendation:</b> start with <b>"+esc(weak[0].x.s)+" • "+esc(weak[0].x.topic)+"</b> at "+weak[0].a+"%.":"<b>Focus recommendation:</b> keep logging PYQs so the tracker can identify your weakest topics.")+"</div></div>";
 }
 function backup(p){
-  var cfg=cloudConfig();
-  p.innerHTML="<h1>Backup & Settings</h1>"+
-  "<div class=\"card section\"><div class=\"kicker\">💾 LOCAL BACKUP</div><p class=\"muted\">JSON export remains your offline safety net.</p><button id=\"export\" class=\"btn\">Export JSON Backup</button> <input id=\"import\" type=\"file\" accept=\".json\"> <button id=\"restore\" class=\"btn alt\">Restore Backup</button><div style=\"margin-top:14px\"><label class=\"muted\">Daily target hours <input id=\"hours\" type=\"number\" min=\"1\" max=\"24\" value=\""+db.settings.hours+"\"></label> <button id=\"saveHours\" class=\"btn alt\">Save</button></div></div>"+
-  "<div class=\"card section cloud-card\"><div class=\"kicker\">☁️ MULTI-DEVICE CLOUD SYNC</div><h2 style=\"margin:4px 0 0\">One tracker on every device</h2><p class=\"cloud-help\">Use one Supabase account. Existing data stays local until you upload it; a fresh device can download the cloud copy.</p>"+
-  "<div id=\"cloudStatus\" class=\"cloud-status\">Checking cloud connection…</div>"+
-  "<div class=\"cloud-grid\"><label class=\"muted\">Project URL<input id=\"cloudProjectUrl\" style=\"width:100%\" placeholder=\"https://your-project.supabase.co\" value=\""+esc(cfg.url||"")+"\"></label><label class=\"muted\">Publishable / anon key<input id=\"cloudAnonKey\" style=\"width:100%\" value=\""+esc(cfg.key||"")+"\"></label></div>"+
-  "<div class=\"cloud-actions\" style=\"margin-top:10px\"><button id=\"cloudConnect\" class=\"btn alt\">Save & Connect</button></div>"+
-  "<div class=\"cloud-grid\" style=\"margin-top:14px\"><label class=\"muted\">Email<input id=\"cloudEmail\" type=\"email\" style=\"width:100%\" placeholder=\"you@example.com\"></label></div>"+
-  "<div class=\"cloud-actions\" style=\"margin-top:10px\"><button id=\"cloudSignup\" class=\"btn\">Send sign-in link</button><button id=\"cloudSignout\" class=\"btn alt\">Sign out</button></div>"+
-  "<div id=\"cloudAccountStatus\" class=\"cloud-status\" style=\"margin-top:10px\"></div>"+
-  "<div class=\"cloud-actions\" style=\"margin-top:14px\"><button id=\"cloudUpload\" class=\"btn\">⬆ Upload this device</button><button id=\"cloudDownload\" class=\"btn alt\">⬇ Download cloud</button><button id=\"cloudSyncNow\" class=\"btn alt\">🔄 Sync Now</button></div>"+
-  "<p class=\"cloud-help\" style=\"margin-top:12px\">Use only the public browser key from Supabase here. Keep private server credentials out of the GitHub Pages app.</p></div>"+
-  "<div class=\"notice section\">Run <b>supabase-setup.sql</b> once in Supabase Dashboard → SQL Editor. On your current device, send the sign-in link and upload. On a new device, sign in and download.</div>";
-  document.getElementById("export").onclick=exportDB;
-  document.getElementById("restore").onclick=importDB;
+  var cfg=firebaseConfig();
+  p.innerHTML="<div class='topline'><div><h1>Backup & Settings</h1><p class='muted page-sub'>Keep JSON backups, or sync the same tracker across your laptop, tablet and phone.</p></div><div class='topmeta'><span class='badge'>"+(firebaseAutoSync?"🔄 Cloud auto-sync ON":"💾 Local backup active")+"</span></div></div>"+
+  "<div class='card section'><div class='kicker'>💾 LOCAL BACKUP</div><p class='muted'>JSON export remains your offline safety net.</p><button id='export' class='btn'>Export JSON Backup</button> <input id='import' type='file' accept='.json'> <button id='restore' class='btn alt'>Restore Backup</button><div style='margin-top:14px'><label class='muted'>Daily target hours <input id='hours' type='number' min='1' max='24' value='"+db.settings.hours+"'></label> <button id='saveHours' class='btn alt'>Save</button></div></div>"+
+  "<div class='card section cloud-card'><div class='kicker'>☁️ MULTI-DEVICE CLOUD SYNC</div><h2 style='margin:4px 0 0'>One tracker on every device</h2><p class='cloud-help'>Use one Google account with Firebase. Your tracker data is stored privately under your signed-in account, and Firestore Security Rules restrict access to your own user document.</p>"+
+  "<div class='notice' style='margin-top:14px'><b>First setup:</b> create a Firebase project, register a Web App, enable Google sign-in and Cloud Firestore, then enter the Web App settings below.</div>"+
+  "<div id='cloudStatus' class='cloud-status'>Checking Firebase connection…</div>"+
+  "<div class='cloud-grid' style='margin-top:14px'>"+
+  "<label class='muted'>API key<input id='firebaseApiKey' style='width:100%' value='"+esc(cfg.apiKey||"")+"'></label>"+
+  "<label class='muted'>Auth domain<input id='firebaseAuthDomain' style='width:100%' placeholder='your-project.firebaseapp.com' value='"+esc(cfg.authDomain||"")+"'></label>"+
+  "<label class='muted'>Project ID<input id='firebaseProjectId' style='width:100%' value='"+esc(cfg.projectId||"")+"'></label>"+
+  "<label class='muted'>Storage bucket<input id='firebaseStorageBucket' style='width:100%' value='"+esc(cfg.storageBucket||"")+"'></label>"+
+  "<label class='muted'>Messaging sender ID<input id='firebaseMessagingSenderId' style='width:100%' value='"+esc(cfg.messagingSenderId||"")+"'></label>"+
+  "<label class='muted'>App ID<input id='firebaseAppId' style='width:100%' value='"+esc(cfg.appId||"")+"'></label></div>"+
+  "<div class='cloud-actions' style='margin-top:10px'><button id='firebaseConnect' class='btn alt'>Save & Connect</button></div>"+
+  "<div id='cloudAccountStatus' class='cloud-status' style='margin-top:10px'></div>"+
+  "<div class='cloud-actions' style='margin-top:14px'><button id='firebaseSignin' class='btn'>🔐 Sign in with Google</button><button id='firebaseSignout' class='btn alt'>Sign out</button><button id='firebaseUpload' class='btn'>⬆ Upload this device</button><button id='firebaseDownload' class='btn alt'>⬇ Download cloud</button><button id='firebaseSyncNow' class='btn alt'>🔄 Sync Now</button></div>"+
+  "<p class='cloud-help' style='margin-top:12px'>Firebase Web configuration values are client-side settings. The protection comes from Firebase Authentication plus Firestore Security Rules.</p></div>"+
+  "<div class='notice section'>⚠️ <b>Conflict rule:</b> after the first upload/download, normal changes auto-sync while the app is open. When both devices changed before syncing, <b>Sync Now</b> lets you choose which copy wins.</div>"+
+  "<div class='card section'><div class='kicker'>⚙️ FIREBASE SETUP</div><h2 style='margin:4px 0 0'>One-time setup files</h2><p class='muted'>Use <b>firestore.rules</b> from this repository in Firebase Console → Firestore Database → Rules. Your GitHub Pages domain must also be allowed for Firebase Authentication.</p></div>";
+  document.getElementById("export").onclick=exportDB;document.getElementById("restore").onclick=importDB;
   document.getElementById("saveHours").onclick=function(){db.settings.hours=Number(document.getElementById("hours").value)||8;save();render();};
-  document.getElementById("cloudConnect").onclick=cloudAction(cloudConnectFromForm);
-  document.getElementById("cloudSignup").onclick=cloudAction(function(){
-    var email=document.getElementById("cloudEmail").value.trim();
-    if(!email)throw new Error("Enter your email address.");
-    saveCloudConfig(document.getElementById("cloudProjectUrl").value,document.getElementById("cloudAnonKey").value);
-    var c=ensureCloudClient();
-    return c.auth.signInWithOtp({email:email,options:{emailRedirectTo:location.href.split("#")[0],shouldCreateUser:true}}).then(function(res){if(res.error)throw res.error;cloudSetStatus("✅ Check your email for the sign-in link.","good");});
+  document.getElementById("firebaseConnect").onclick=firebaseAction(async function(){
+    var cfg2={apiKey:firebaseApiKey.value.trim(),authDomain:firebaseAuthDomain.value.trim(),projectId:firebaseProjectId.value.trim(),storageBucket:firebaseStorageBucket.value.trim(),messagingSenderId:firebaseMessagingSenderId.value.trim(),appId:firebaseAppId.value.trim()};
+    saveFirebaseConfig(cfg2);firebaseApp=null;ensureFirebase();await refreshFirebaseAuth();firebaseSetStatus("✅ Firebase connected. Sign in with Google below.","good");firebaseSetAccountStatus();
   });
-  document.getElementById("cloudSignout").onclick=cloudAction(cloudSignOut);
-  document.getElementById("cloudUpload").onclick=cloudAction(cloudUpload);
-  document.getElementById("cloudDownload").onclick=cloudAction(cloudDownload);
-  document.getElementById("cloudSyncNow").onclick=cloudAction(cloudSyncNow);
-  cloudSetAccountStatus();
-  refreshCloudSession().then(function(){cloudSetAccountStatus();if(cloudSessionUser())cloudSetStatus("✅ Cloud account ready.","good");else if(cfg.url&&cfg.key)cloudSetStatus("Project saved. Send a sign-in link.","muted");else cloudSetStatus("Enter Supabase project details to connect.","muted");});
+  document.getElementById("firebaseSignin").onclick=firebaseAction(firebaseSignInGoogle);
+  document.getElementById("firebaseSignout").onclick=firebaseAction(firebaseSignOut);
+  document.getElementById("firebaseUpload").onclick=firebaseAction(firebaseUpload);
+  document.getElementById("firebaseDownload").onclick=firebaseAction(firebaseDownload);
+  document.getElementById("firebaseSyncNow").onclick=firebaseAction(firebaseSyncNow);
+  firebaseSetAccountStatus();
+  refreshFirebaseAuth().then(function(){firebaseSetAccountStatus();if(firebaseUser)firebaseSetStatus("✅ Firebase account ready.","good");else if(cfg.projectId)firebaseSetStatus("Firebase settings saved. Sign in with Google to start syncing.","muted");else firebaseSetStatus("Enter your Firebase Web App settings to connect.","muted");});
 }
+
 function exportDB(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="ssc-cgl-2027-backup-"+today()+".json";a.click();}
 function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{var incoming=JSON.parse(r.result);if(!incoming||!Array.isArray(incoming.topics)||!Array.isArray(incoming.study))throw new Error("invalid");db=incoming;normalizeDb();save();render();alert("Backup restored.");}catch(e){alert("Invalid backup file.");}};r.readAsText(f);}
 render();
