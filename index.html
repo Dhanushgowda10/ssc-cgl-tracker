@@ -119,10 +119,9 @@ function dashboard(p){
   "<div class=card><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.type+"</span></div>";}).join("")||"<div class=good>Revision queue clear.</div>")+"</div></div>";
 }
 
+
 function topicOptions(subject,selected){
-  return (S[subject]||[]).map(function(t){
-    return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";
-  }).join("");
+  return (S[subject]||[]).map(function(t){return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";}).join("");
 }
 function nextTopic(subject){
   var x=db.topics.find(function(t){return t.s===subject&&t.status==="Learning";});
@@ -140,73 +139,55 @@ function fixedTemplate(){
     {id:"english",subject:"English",start:"14:00",end:"16:00",minutes:120,type:"Study",topic:nextTopic("English"),done:false,logged:false},
     {id:"gym",subject:null,start:"16:00",end:"18:00",minutes:0,type:"Break",title:"🏋️ Gym / travel / recovery",done:false,logged:false},
     {id:"break4",subject:null,start:"18:00",end:"18:30",minutes:0,type:"Break",title:"🚿 Shower + snack",done:false,logged:false},
-    {id:"recap",subject:null,start:"18:30",end:"19:30",minutes:60,type:"Recap",title:"🔄 Daily Recap — recall today's topics + mistakes",done:false,logged:false}
+    {id:"recap",subject:null,start:"18:30",end:"19:00",minutes:30,type:"Recap",title:"🔄 Daily Recap",done:false,logged:false}
   ];
+}
+function validPlan(tasks){
+  return Array.isArray(tasks)&&tasks.length>0&&tasks.every(function(t){return t&&typeof t==="object"&&typeof t.type==="string"&&typeof t.start==="string"&&typeof t.end==="string"&&Number.isFinite(Number(t.minutes));});
 }
 function planForToday(){
   var day=today();
   if(!db.plans)db.plans={};
-  if(db.settings.plannerVersion!=="topic-select-v4"){
-    db.plans={};
-    db.settings.plannerVersion="topic-select-v4";
-    save();
-  }
-  if(!db.plans[day]){
-    db.plans[day]=fixedTemplate();
-    save();
-  }
+  if(db.settings.plannerVersion!=="topic-select-v5")db.settings.plannerVersion="topic-select-v5";
+  if(!validPlan(db.plans[day]))db.plans[day]=fixedTemplate();
+  save();
   return db.plans[day];
 }
 function planner(p){
   var day=today(), sunday=new Date(day+"T12:00:00").getDay()===0, tasks=planForToday();
-  var studyMinutes=tasks.reduce(function(s,x){return s+x.minutes;},0);
-  var doneMinutes=tasks.filter(function(x){return x.done;}).reduce(function(s,x){return s+x.minutes;},0);
-  var target=480;
+  var target=8*60;
+  var studyMinutes=tasks.reduce(function(s,x){return s+Number(x.minutes||0);},0);
+  var doneMinutes=tasks.filter(function(x){return x.type!=="Break"&&x.done;}).reduce(function(s,x){return s+Number(x.minutes||0);},0);
   var remaining=Math.max(0,target-doneMinutes);
   var dateText=new Date(day+"T12:00:00").toLocaleDateString("en-IN",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
-  function label(x){
-    if(x.type==="Break")return x.title;
-    if(x.type==="Recap")return "🔄 "+(sunday?"Monthly Revision + Mistake Notebook":"Daily Recap — recall today's topics + mistakes");
-    return (sunday?"🔁 Weekly Revision — ":"📚 ")+x.subject;
-  }
   var rows=tasks.map(function(x,i){
-    if(x.type==="Break"){
-      return "<div class='row' style='padding:11px 0;opacity:.72'><div><b>"+esc(x.title)+"</b><div class='muted' style='font-size:12px'>"+x.start+" – "+x.end+"</div></div><span class='badge'>BREAK</span></div>";
-    }
-    var selected=x.topic||"";
-    var selectHtml=x.subject?"<select class='plan-topic' data-i='"+i+"' style='max-width:360px'><option value=''>Select topic</option>"+topicOptions(x.subject,selected)+"</select>":"";
-    var checked=x.done?"checked":"";
+    if(x.type==="Break")return "<div class='row' style='padding:11px 0;opacity:.72'><div><b>"+esc(x.title||"Break")+"</b><div class='muted' style='font-size:12px'>"+x.start+" – "+x.end+"</div></div><span class='badge'>BREAK</span></div>";
+    var topic=x.topic||"";
+    var subject=x.subject||"";
+    var topicSelect=subject?"<select class='plan-topic' data-i='"+i+"'><option value=''>Select topic</option>"+topicOptions(subject,topic)+"</select>":"";
+    var title=(sunday&&subject?"🔁 Weekly Revision — ":"📚 ")+esc(subject);
+    if(x.type==="Recap")title="🔄 Daily Recap";
     return "<div class='row' style='padding:14px 0;gap:14px;align-items:flex-start'><div style='display:flex;gap:12px;min-width:0;flex:1'>"+
-      "<input class='plan-check' data-i='"+i+"' type='checkbox' "+checked+" style='width:19px;height:19px;margin-top:3px;accent-color:#83a1ff'>"+
-      "<div style='min-width:0;flex:1'><div style='font-weight:850'>"+esc(label(x))+"</div><div class='muted' style='font-size:12px;margin:2px 0 8px'>"+x.start+" – "+x.end+" • "+x.minutes+" min</div>"+selectHtml+"</div></div>"+
-      "<span class='badge'>"+(x.done?"✅ DONE":x.type.toUpperCase())+"</span></div>";
+      "<input class='plan-check' data-i='"+i+"' type='checkbox' "+(x.done?"checked":"")+" style='width:19px;height:19px;margin-top:3px;accent-color:#83a1ff'>"+
+      "<div style='min-width:0;flex:1'><div style='font-weight:850'>"+title+"</div><div class='muted' style='font-size:12px;margin:2px 0 8px'>"+x.start+" – "+x.end+" • "+x.minutes+" min</div>"+
+      (x.type==="Recap"?"<div class='notice'>Recall the day's topics without notes, write mistakes, and note tomorrow's first task.</div>":topicSelect)+"</div></div><span class='badge'>"+(x.done?"✅ DONE":x.type.toUpperCase())+"</span></div>";
   }).join("");
-  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+dateText+" • "+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+"</p></div>"+
-    "<div class='topmeta'><span class='badge'>🎯 8h focused target</span><span class='badge'>⏱️ Real breaks included</span></div></div>"+
-    "<div class='notice section'>"+(sunday?"<b class='warn'>Sunday mode:</b> choose the topics you want to revise for each subject. The evening block becomes monthly revision + mistakes.":"<b>Every morning:</b> choose exactly what you want to study in each subject dropdown, save the plan, then work through the day. Your selections stay saved for this date.")+"</div>"+
-    "<div class='grid cards section'><div class='card'><div class='kicker'>STUDY TARGET</div><div class='big'>8h</div><div class='muted'>7:00 AM → 7:00 PM focused window</div></div>"+
-    "<div class='card'><div class='kicker'>PLANNED STUDY</div><div class='big'>8h</div><div class='muted'>2h GA • 2h Quant • 1.5h Reasoning • 2h English • 0.5h recap</div></div>"+
-    "<div class='card'><div class='kicker'>COMPLETED</div><div class='big'>"+Math.round(doneMinutes/60*10)/10+"h</div><div class='bar'><i style='width:"+Math.min(100,doneMinutes/target*100)+"%'></i></div></div>"+
-    "<div class='card'><div class='kicker'>REMAINING</div><div class='big'>"+Math.round(remaining/60*10)/10+"h</div><div class='muted'>Based on completed blocks</div></div></div>"+
-    "<div class='grid two section'><div class='card'><div class='row' style='border-bottom:0'><h2>🗓️ Your Fixed Daily Routine</h2><span class='badge'>Choose topics ↓</span></div>"+rows+
-    "<div style='display:flex;gap:8px;margin-top:16px'><button id='savePlan' class='btn'>💾 Save Today's Plan</button><button id='resetPlan' class='btn alt'>↩ Reset Today's Choices</button></div></div>"+
-    "<div class='card'><h2>🧠 How this works</h2><div class='notice'><b>1. Pick topics</b><br>Select the exact topic you will study in GA, Quant, Reasoning and English.</div><div class='notice' style='margin-top:9px'><b>2. Save</b><br>The choices are stored only for today's date, so tomorrow you can make a different plan.</div><div class='notice' style='margin-top:9px'><b>3. Study + tick done</b><br>When you tick a block complete, the scheduled minutes and selected topic are added to your Study Log automatically.</div><div style='margin-top:12px' class='"+(mockUnlocked()?"good":"warn")+"'>"+(mockUnlocked()?"🎯 Full mocks are unlocked.":"🔒 Full mocks unlock automatically at 50% syllabus completion.")+"</div></div></div>";
-  p.querySelectorAll(".plan-topic").forEach(function(sel){
-    sel.addEventListener("change",function(){tasks[Number(sel.dataset.i)].topic=sel.value;});
-  });
-  p.querySelectorAll(".plan-check").forEach(function(box){
-    box.addEventListener("change",function(){
-      var task=tasks[Number(box.dataset.i)];
-      task.done=box.checked;
-      if(box.checked && !task.logged){
-        db.study.push({date:day,subject:task.subject||"Recap",minutes:task.minutes,topic:task.topic||task.title});
-        task.logged=true;
-      }
-      save();planner(p);
-    });
-  });
-  document.getElementById("savePlan").addEventListener("click",function(){save();p.querySelector("#savePlan").textContent="✅ Saved for today";setTimeout(function(){if(document.getElementById("savePlan"))document.getElementById("savePlan").textContent="💾 Save Today's Plan";},1200);});
-  document.getElementById("resetPlan").addEventListener("click",function(){if(confirm("Reset today's topic choices and completion checkboxes?")){delete db.plans[day];save();planner(p);}});
+  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+dateText+" • "+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+"</p></div><div class='topmeta'><span class='badge'>🎯 8h target</span><span class='badge'>⏱️ Breaks included</span></div></div>"+
+  "<div class='notice section'>"+(sunday?"<b class='warn'>Sunday mode:</b> use the same time blocks, but select revision topics instead of new learning.":"<b>Morning setup:</b> choose one exact topic for each subject block, save it, then tick each block when completed.")+"</div>"+
+  "<div class='grid cards section'><div class='card'><div class='kicker'>TARGET</div><div class='big'>8h</div><div class='muted'>Focused study goal</div></div><div class='card'><div class='kicker'>SCHEDULED</div><div class='big'>"+Math.round(studyMinutes/60*10)/10+"h</div><div class='muted'>Includes 30-min recap</div></div><div class='card'><div class='kicker'>COMPLETED</div><div class='big'>"+Math.round(doneMinutes/60*10)/10+"h</div><div class='bar'><i style='width:"+Math.min(100,doneMinutes/target*100)+"%'></i></div></div><div class='card'><div class='kicker'>REMAINING</div><div class='big'>"+Math.round(remaining/60*10)/10+"h</div><div class='muted'>Study still to complete</div></div></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><h2>🗓️ Your Fixed Daily Routine</h2><span class='badge'>Choose topics in blue dropdowns</span></div>"+rows+
+  "<div style='display:flex;gap:8px;margin-top:16px'><button id='savePlan' class='btn'>💾 Save Today's Plan</button><button id='resetPlan' class='btn alt'>↩ Reset Today</button></div></div>";
+  p.querySelectorAll(".plan-topic").forEach(function(sel){sel.addEventListener("change",function(){tasks[Number(sel.dataset.i)].topic=sel.value;});});
+  p.querySelectorAll(".plan-check").forEach(function(box){box.addEventListener("change",function(){
+    var task=tasks[Number(box.dataset.i)];task.done=box.checked;
+    if(box.checked&&!task.logged&&task.subject&&task.minutes>0){
+      db.study.push({date:day,subject:task.subject,minutes:task.minutes,questions:0,topic:task.topic||"Unspecified"});
+      task.logged=true;
+    }
+    save();planner(p);
+  });});
+  document.getElementById("savePlan").addEventListener("click",function(){save();var b=document.getElementById("savePlan");b.textContent="✅ Saved for today";setTimeout(function(){if(document.getElementById("savePlan"))document.getElementById("savePlan").textContent="💾 Save Today's Plan";},1000);});
+  document.getElementById("resetPlan").addEventListener("click",function(){if(confirm("Reset today's selected topics and completed blocks?")){delete db.plans[day];save();planner(p);}});
 }
 function syllabus(p){
   p.innerHTML="<h1>Syllabus</h1><p class=muted>Complete a topic → weekly review on the next Sunday + monthly review 30 days later.</p><div class=card><table><tr><th>Subject</th><th>Topic</th><th>Status</th><th>Weekly</th><th>Monthly</th><th>PYQ</th></tr>"+
