@@ -87,16 +87,92 @@ function dashboard(p){
   "</div><div class=card><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.type+"</span></div>";}).join("")||"<div class=good>Revision queue clear.</div>")+"</div></div>"+
   "<div class=card style='margin-top:14px'><h2>🔥 Consistency</h2><div class=heat>"+heat()+"</div></div>";
 }
-function planner(p){
-  var due=revisions().filter(function(x){return x.date<=today();}),sunday=new Date().getDay()===0;
-  p.innerHTML="<h1>Daily Planner</h1><p class=muted>"+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+" • target "+db.settings.hours+" hours</p>"+
-  "<div class='grid two'><div class=card><h2>Priority order</h2><p>1. Overdue revisions</p><p>2. Today's weekly/monthly revisions</p><p>3. Weak chapters below 70%</p><p>4. New syllabus</p><p>"+(mockUnlocked()?"<span class=good>🎯 Full mocks unlocked.</span>":"<span class=warn>🔒 Full mocks unlock at 50% syllabus.</span>")+"</p></div>"+
-  "<div class=card><h2>Quick Study Log</h2><form id=quickForm><select name=subject>"+Object.keys(S).map(function(s){return "<option>"+s+"</option>";}).join("")+"</select><input name=minutes type=number min=1 placeholder='Minutes' required><input name=topic placeholder='Topic'><button class=btn type=submit>Log Study</button></form></div></div>"+
-  "<div class=card style='margin-top:14px'><h2>Due / Overdue</h2>"+(due.map(function(x){return "<div class=row><span><b>"+x.x.s+"</b> • "+esc(x.x.topic)+" <span class=badge>"+x.type+"</span></span><button class='btn doneRev' data-id="+encodeURIComponent(x.x.id)+" data-type="+x.type+">Done</button></div>";}).join("")||"<div class=good>Nothing due today.</div>")+"</div>";
-  document.getElementById("quickForm").addEventListener("submit",function(e){e.preventDefault();var f=new FormData(e.target);db.study.push({date:today(),subject:f.get("subject"),minutes:f.get("minutes"),topic:f.get("topic")});save();render();});
-  p.querySelectorAll(".doneRev").forEach(function(b){b.addEventListener("click",function(){var x=db.topics.find(function(t){return t.id===decodeURIComponent(b.dataset.id);});if(x){if(b.dataset.type==="Weekly")x.weeklyDone=true;else x.monthlyDone=true;save();render();}});});
+function planForToday(){
+  var day=today();
+  if(!db.plans)db.plans={};
+  if(!db.plans[day]){
+    var target=Number(db.settings.hours||8)*60;
+    var sunday=new Date(day+"T12:00:00").getDay()===0;
+    var items=[];
+    var seen={};
+    var due=revisions().filter(function(x){return x.date<=day;});
+    due.sort(function(a,b){return (a.over?0:1)-(b.over?0:1)||a.date.localeCompare(b.date);});
+    var addTask=function(type,title,minutes,meta){if(minutes<=0)return;if(items.length>30)return;items.push({id:"t"+items.length,type:type,title:title,minutes:minutes,done:false,meta:meta||""});};
+    if(sunday){
+      due.forEach(function(x){
+        if(items.reduce(function(s,t){return s+t.minutes;},0)<Math.min(target,360) && !seen[x.x.id+"|"+x.type]){
+          seen[x.x.id+"|"+x.type]=1;addTask(x.type,"Revise "+x.x.s+" — "+x.x.topic,45,x.x.id);
+        }
+      });
+    }else{
+      due.forEach(function(x){
+        if(items.reduce(function(s,t){return s+t.minutes;},0)<Math.min(target,180) && !seen[x.x.id+"|"+x.type]){
+          seen[x.x.id+"|"+x.type]=1;addTask(x.type,"Revise "+x.x.s+" — "+x.x.topic,45,x.x.id);
+        }
+      });
+    }
+    var weak=db.topics.filter(function(x){return x.acc!=null&&Number(x.acc)<70&&x.status!=="Completed";}).sort(function(a,b){return a.acc-b.acc;});
+    weak.slice(0,2).forEach(function(x){if(items.reduce(function(s,t){return s+t.minutes;},0)<target){addTask("Weak","Strengthen "+x.s+" — "+x.topic,75,x.id);}});
+    var notStarted=db.topics.filter(function(x){return x.status==="Not started";});
+    var usedSubjects={};
+    notStarted.forEach(function(x){
+      var current=items.reduce(function(s,t){return s+t.minutes;},0);
+      if(current<target-45 && items.length<12 && !usedSubjects[x.s]){
+        usedSubjects[x.s]=1;addTask("New","Learn "+x.s+" — "+x.topic,90,x.id);
+      }
+    });
+    var subjects=Object.keys(S);
+    var si=0;
+    while(items.reduce(function(s,t){return s+t.minutes;},0)<target-30 && items.length<14){
+      var sub=subjects[si%subjects.length];
+      addTask("PYQ",sub+" PYQs + mistake review",60,sub);
+      si++;
+    }
+    var total=items.reduce(function(s,t){return s+t.minutes;},0);
+    if(total>target){
+      var overflow=total-target;
+      for(var i=items.length-1;i>=0&&overflow>0;i--){
+        var cut=Math.min(overflow,Math.max(0,items[i].minutes-45));
+        items[i].minutes-=cut;overflow-=cut;
+      }
+    }
+    total=items.reduce(function(s,t){return s+t.minutes;},0);
+    if(total<target)items.push({id:"extra",type:"Flex",title:sunday?"Extra revision / mistake notebook":"Deep practice / backlog",minutes:target-total,done:false,meta:""});
+    db.plans[day]=items;
+    save();
+  }
+  return db.plans[day];
 }
-function syllabus(p){
+
+function planner(p){
+  var day=today(), sunday=new Date(day+"T12:00:00").getDay()===0, tasks=planForToday(), target=Number(db.settings.hours||8)*60;
+  var done=tasks.filter(function(x){return x.done;}).reduce(function(s,x){return s+x.minutes;},0);
+  var remaining=Math.max(0,target-done);
+  var cursor=8*60;
+  function clock(m){var h=Math.floor(m/60),mm=m%60;return (h>12?h-12:h||12)+":"+String(mm).padStart(2,"0")+" "+(h>=12?"PM":"AM");}
+  var rows=tasks.map(function(t,i){
+    var start=cursor;cursor+=Number(t.minutes);
+    return "<div class='row plan-task' data-i='"+i+"' style='gap:14px;padding:13px 0'>"+
+      "<div style='display:flex;align-items:center;gap:12px;min-width:0'>"+
+      "<input class='plan-check' data-i='"+i+"' type='checkbox' "+(t.done?"checked":"")+" style='width:19px;height:19px;accent-color:#83a1ff'>"+
+      "<div><div style='font-weight:800;"+(t.done?"text-decoration:line-through;opacity:.58":"")+"'>"+esc(t.title)+"</div><div class='muted small'>"+clock(start)+" – "+clock(cursor)+"</div></div></div>"+
+      "<span class='badge'>"+t.minutes+" min</span></div>";
+  }).join("");
+  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+(sunday?"🔁 Sunday Revision Day — revision is the priority today.":"📚 Study + Practice Day — the planner turns your priorities into an 8-hour schedule.")+"</p></div>"+
+    "<div class='topmeta'><span class='badge'>📅 "+new Date(day+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})+"</span><span class='badge'>🎯 "+db.settings.hours+"h target</span></div></div>"+
+    "<div class='grid cards section'><div class='card'><div class='kicker'>TODAY'S TARGET</div><div class='big'>"+db.settings.hours+"h</div><div class='muted'>Focused preparation</div></div>"+
+    "<div class='card'><div class='kicker'>PLANNED</div><div class='big'>"+Math.round(tasks.reduce(function(s,x){return s+x.minutes;},0)/60*10)/10+"h</div><div class='muted'>Auto-built from your data</div></div>"+
+    "<div class='card'><div class='kicker'>COMPLETED</div><div class='big'>"+Math.round(done/60*10)/10+"h</div><div class='bar'><i style='width:"+Math.min(100,done/target*100)+"%'></i></div></div>"+
+    "<div class='card'><div class='kicker'>REMAINING</div><div class='big'>"+Math.round(remaining/60*10)/10+"h</div><div class='muted'>Keep moving</div></div></div>"+
+    "<div class='grid two section'><div class='card'><div class='row' style='border-bottom:0'><h2>🗓️ 8-Hour Timetable</h2><span class='badge'>"+tasks.length+" blocks</span></div>"+(rows||"<div class='empty'>No tasks generated.</div>")+"</div>"+
+    "<div class='card'><h2>🧠 Why these tasks?</h2><div class='notice'><b>Priority engine</b><br>1. Overdue revisions<br>2. Today's weekly/monthly revisions<br>3. Weak chapters below 70%<br>4. New syllabus<br>5. PYQ practice</div>"+
+    "<div style='margin-top:13px' class='notice'>"+(sunday?"<b class='warn'>Sunday rule:</b> the plan deliberately loads more revision today so the week is consolidated.":"<b>Weekday rule:</b> revisions are protected first, then weaknesses and new learning.")+"</div>"+
+    (mockUnlocked()?"<div style='margin-top:13px' class='good'>🎯 Full mocks are unlocked.</div>":"<div style='margin-top:13px' class='warn'>🔒 Full mocks unlock automatically at 50% syllabus completion.</div>")+
+    "</div></div>";
+  p.querySelectorAll(".plan-check").forEach(function(box){
+    box.addEventListener("change",function(){tasks[Number(box.dataset.i)].done=box.checked;save();planner(p);});
+  });
+}function syllabus(p){
   p.innerHTML="<h1>Syllabus</h1><p class=muted>Complete a topic → weekly review on the next Sunday + monthly review 30 days later.</p><div class=card><table><tr><th>Subject</th><th>Topic</th><th>Status</th><th>Weekly</th><th>Monthly</th><th>PYQ</th></tr>"+
   db.topics.map(function(x,i){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td><select class=status data-i="+i+"><option>Not started</option><option>Learning</option><option>Completed</option></select></td><td>"+(x.weeklyDone?"✅ ":"")+(x.weekly||"—")+"</td><td>"+(x.monthlyDone?"✅ ":"")+(x.monthly||"—")+"</td><td>"+(x.acc==null?"—":x.acc+"%")+"</td></tr>";}).join("")+"</table></div>";
   p.querySelectorAll(".status").forEach(function(s){var i=Number(s.dataset.i);s.value=db.topics[i].status;s.addEventListener("change",function(){var x=db.topics[i],old=x.status;x.status=s.value;if(s.value==="Completed"&&old!=="Completed"){x.studied=today();x.weekly=nextSunday(x.studied);x.monthly=addDays(x.studied,30);x.weeklyDone=false;x.monthlyDone=false;}save();render();});});
