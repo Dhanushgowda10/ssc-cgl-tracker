@@ -301,31 +301,90 @@ function study(p){
     });
     save();render();
   });
-}function revision(p){
-  var r=revisions();
-  var weekly=r.filter(function(x){return x.type==="Weekly";});
-  var monthly=r.filter(function(x){return x.type==="Monthly";});
-  p.innerHTML="<div class='topline'><div><h1>Revision Center</h1><p class='muted page-sub'>Your long-term retention system — every completed topic gets a Sunday review and a 30-day monthly review.</p></div><div class='topmeta'><span class='badge'>🔁 Sunday weekly</span><span class='badge'>📅 30-day monthly</span></div></div>"+
-    "<div class='grid two section'>"+
-      "<div class='card'><div class='row' style='border-bottom:0'><h2>🔁 Weekly Revision</h2><span class='badge'>"+weekly.filter(function(x){return x.over;}).length+" overdue</span></div>"+
-      (weekly.length?weekly.map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join(""):"<div class='empty'>No weekly revisions are waiting.</div>")+
-      "</div>"+
-      "<div class='card'><div class='row' style='border-bottom:0'><h2>📅 Monthly Revision</h2><span class='badge'>"+monthly.filter(function(x){return x.over;}).length+" overdue</span></div>"+
-      (monthly.length?monthly.map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join(""):"<div class='empty'>No monthly revisions are waiting.</div>")+
-      "</div>"+
-    "</div>"+
-    "<div class='card section'><div id='calendarBox'>"+calendarHtml()+"</div></div>";
+}function revisionStats(){
+  db.revisionHistory=db.revisionHistory||[];
+  var t=today(),weekStart=new Date(t+"T12:00:00");
+  weekStart.setDate(weekStart.getDate()-weekStart.getDay());
+  var monthStart=t.slice(0,8)+"01";
+  var week=db.revisionHistory.filter(function(x){return x.completedOn>=weekStart.toISOString().slice(0,10);}).length;
+  var month=db.revisionHistory.filter(function(x){return x.completedOn>=monthStart;}).length;
+  var sundays={};
+  db.revisionHistory.filter(function(x){return x.type==="Weekly";}).forEach(function(x){
+    var d=new Date(x.completedOn+"T12:00:00");
+    var key=new Date(d);key.setDate(d.getDate()-d.getDay());sundays[key.toISOString().slice(0,10)]=true;
+  });
+  var streak=0,d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay());
+  while(sundays[d.toISOString().slice(0,10)]){streak++;d.setDate(d.getDate()-7);if(streak>100)break;}
+  return {week:week,month:month,streak:streak};
+}
+function startRevision(id,type){
+  db.activeRevision={id:id,type:type,startedOn:today()};
+  save();render();
+}
+function completeRevision(id,type){
+  var x=db.topics.find(function(t){return t.id===id;});
+  if(!x)return;
+  if(type==="Weekly")x.weeklyDone=true;else x.monthlyDone=true;
+  db.revisionHistory=db.revisionHistory||[];
+  db.revisionHistory.push({topicId:id,subject:x.s,topic:x.topic,type:type,scheduledFor:type==="Weekly"?x.weekly:x.monthly,completedOn:today()});
+  if(db.activeRevision&&db.activeRevision.id===id&&db.activeRevision.type===type)delete db.activeRevision;
+  save();render();
+}
+function revision(p){
+  db.revisionHistory=db.revisionHistory||[];
+  var r=revisions(),weekly=r.filter(function(x){return x.type==="Weekly";}),monthly=r.filter(function(x){return x.type==="Monthly";});
+  var due=r.filter(function(x){return x.date<=today();}),upcoming=r.filter(function(x){return x.date>today();});
+  var stats=revisionStats(), active=db.activeRevision?db.topics.find(function(x){return x.id===db.activeRevision.id;}):null;
+  var activeType=db.activeRevision?db.activeRevision.type:null;
+  var history=db.revisionHistory.slice().reverse().slice(0,10);
+
+  function taskCard(x){
+    var dueNow=x.date<=today(), status=dueNow?(x.over?"OVERDUE":"DUE TODAY"):"UPCOMING";
+    return "<div class='row' style='padding:14px 0;gap:14px;align-items:center'>"+
+      "<div style='min-width:0;flex:1'><div style='font-weight:850'>"+x.x.s+" • "+esc(x.x.topic)+"</div><div class='muted' style='font-size:12px;margin-top:3px'>"+x.type+" • Scheduled "+x.date+"</div></div>"+
+      "<span class='"+(x.over?"bad":"warn")+"'>"+status+"</span>"+
+      "<button class='btn alt rev-start' data-id='"+encodeURIComponent(x.x.id)+"' data-type='"+x.type+"'>▶ Start</button></div>";
+  }
+  function historyRows(){
+    return history.map(function(x){return "<tr><td>"+esc(x.completedOn)+"</td><td>"+esc(x.subject)+"</td><td>"+esc(x.topic)+"</td><td>"+x.type+"</td></tr>";}).join("");
+  }
+
+  var activeHtml="";
+  if(active&&activeType){
+    activeHtml="<div class='card section' style='background:linear-gradient(135deg,#172d50,#101f37 60%,#152846);border-color:#486a9e'><div class='topline'><div><div class='kicker'>▶ REVISION MODE</div><h2 style='font-size:24px;margin:5px 0'>"+esc(active.s)+" — "+esc(active.topic)+"</h2><div class='muted'>"+activeType+" revision • Started "+esc(db.activeRevision.startedOn)+"</div></div><span class='badge'>Focus mode</span></div>"+
+      "<div class='grid three' style='margin-top:14px'><div class='notice'>☑ <b>Recall first</b><br><span class='muted'>Try to reproduce the concept without notes.</span></div><div class='notice'>📝 <b>Review mistakes</b><br><span class='muted'>Check errors and weak points.</span></div><div class='notice'>🧮 <b>Practice</b><br><span class='muted'>Solve a small set of PYQs.</span></div></div>"+
+      "<div style='display:flex;gap:8px;margin-top:15px'><button id='completeActive' class='btn'>✓ Mark Revision Complete</button><button id='cancelActive' class='btn alt'>Exit Mode</button></div></div>";
+  }
+
+  p.innerHTML="<div class='topline'><div><h1>Revision Center</h1><p class='muted page-sub'>Turn completed topics into a repeatable retention system: weekly → monthly → history.</p></div><div class='topmeta'><span class='badge'>🔁 Sunday weekly</span><span class='badge'>📅 30-day monthly</span></div></div>"+
+    "<div class='grid cards section'><div class='card'><div class='kicker'>DUE / OVERDUE</div><div class='big'>"+due.length+"</div><div class='muted'>"+due.filter(function(x){return x.over;}).length+" overdue</div></div><div class='card'><div class='kicker'>COMPLETED THIS WEEK</div><div class='big'>"+stats.week+"</div><div class='muted'>revision sessions</div></div><div class='card'><div class='kicker'>COMPLETED THIS MONTH</div><div class='big'>"+stats.month+"</div><div class='muted'>revision sessions</div></div><div class='card'><div class='kicker'>🔥 SUNDAY STREAK</div><div class='big'>"+stats.streak+"</div><div class='muted'>consecutive weekly cycles</div></div></div>"+
+    activeHtml+
+    "<div class='grid two section'><div class='card'><div class='row' style='border-bottom:0'><h2>🔴 Due Today / Overdue</h2><span class='badge'>"+due.length+" items</span></div>"+
+      (due.length?due.map(taskCard).join(""):"<div class='empty'>Nothing due. Great job staying ahead.</div>")+
+    "</div><div class='card'><div class='row' style='border-bottom:0'><h2>📆 Upcoming</h2><span class='badge'>"+upcoming.length+" scheduled</span></div>"+
+      (upcoming.length?upcoming.slice(0,12).map(taskCard).join(""):"<div class='empty'>No upcoming revisions right now.</div>")+
+    "</div></div>"+
+    "<div class='card section'><div id='calendarBox'>"+calendarHtml()+"</div></div>"+
+    "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>REVISION HISTORY</div><h2 style='margin:4px 0 0'>✅ Recent completions</h2></div><span class='badge'>Last 10</span></div>"+
+      (history.length?"<table><tr><th>Completed</th><th>Subject</th><th>Topic</th><th>Type</th></tr>"+historyRows()+"</table>":"<div class='empty'>Your revision history will appear here.</div>")+
+    "</div>";
+
   var box=document.getElementById("calendarBox");
   box.querySelectorAll("[data-cal-nav]").forEach(function(b){b.addEventListener("click",function(){calendarCursor+=Number(b.dataset.calNav);revision(p);});});
   box.querySelectorAll("[data-jump-today]").forEach(function(b){b.addEventListener("click",function(){var d=new Date();calendarCursor=d.getFullYear()*12+d.getMonth();revision(p);});});
+  p.querySelectorAll(".rev-start").forEach(function(b){b.addEventListener("click",function(){startRevision(decodeURIComponent(b.dataset.id),b.dataset.type);});});
+  if(active&&activeType){
+    document.getElementById("completeActive").addEventListener("click",function(){completeRevision(active.id,activeType);});
+    document.getElementById("cancelActive").addEventListener("click",function(){delete db.activeRevision;save();revision(p);});
+  }
 }
-var calendarCursor=(new Date().getFullYear()*12+new Date().getMonth());
+var calendarCursor=(typeof calendarCursor==="number"?calendarCursor:(new Date().getFullYear()*12+new Date().getMonth()));
 function calendarHtml(){
   var y=Math.floor(calendarCursor/12),m=calendarCursor%12;
   if(m<0){m+=12;y--;}
   var first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate();
   var monthName=first.toLocaleString("en-US",{month:"long"});
-  var todayDate=today(),out="<div class='calendar-wrap'><div class='calendar-head'><div><div class='month-title'>"+monthName+" "+y+"</div><div class='month-sub'>Revision calendar • Sunday is your dedicated weekly revision day</div></div><div class='cal-nav'><button class='icon-btn' data-cal-nav='-1' aria-label='Previous month'>‹</button><button class='icon-btn' data-jump-today>Today</button><button class='icon-btn' data-cal-nav='1' aria-label='Next month'>›</button></div></div>";
+  var todayDate=today(),out="<div class='calendar-wrap'><div class='calendar-head'><div><div class='month-title'>"+monthName+" "+y+"</div><div class='month-sub'>Revision calendar • Sunday is your dedicated weekly revision day</div></div><div class='cal-nav'><button class='icon-btn' data-cal-nav='-1' aria-label='Previous month'>‹</button><button class='icon-btn' data-jump-today type='button'>Today</button><button class='icon-btn' data-cal-nav='1' aria-label='Next month'>›</button></div></div>";
   out+="<div class='weekdays'><div class='weekday'>Mon</div><div class='weekday'>Tue</div><div class='weekday'>Wed</div><div class='weekday'>Thu</div><div class='weekday'>Fri</div><div class='weekday'>Sat</div><div class='weekday'>Sun</div></div>";
   var start=(first.getDay()+6)%7;
   out+="<div class='calendar'>";
