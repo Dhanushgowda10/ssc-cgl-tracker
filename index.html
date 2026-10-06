@@ -118,6 +118,45 @@ function dashboard(p){
   "<div class='grid two section'><div class=card><h2>⚠️ Weak Topics</h2>"+(w.length?"<table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+w.map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class=bad>"+x.acc+"%</td></tr>";}).join("")+"</table>":"<div class=muted>Log PYQ accuracy to detect weak chapters.</div>")+"</div>"+
   "<div class=card><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.type+"</span></div>";}).join("")||"<div class=good>Revision queue clear.</div>")+"</div></div>";
 }
+
+function topicOptions(subject,selected){
+  return (S[subject]||[]).map(function(t){
+    return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";
+  }).join("");
+}
+function nextTopic(subject){
+  var x=db.topics.find(function(t){return t.s===subject&&t.status==="Learning";});
+  if(!x)x=db.topics.find(function(t){return t.s===subject&&t.status==="Not started";});
+  return x?x.topic:((S[subject]&&S[subject][0])||"Revision / practice");
+}
+function fixedTemplate(){
+  return [
+    {id:"ga",subject:"GA",start:"07:00",end:"09:00",minutes:120,type:"Study",topic:nextTopic("GA"),done:false,logged:false},
+    {id:"break1",subject:null,start:"09:00",end:"09:30",minutes:0,type:"Break",title:"🍳 Breakfast",done:false,logged:false},
+    {id:"quant",subject:"Quant",start:"09:30",end:"11:30",minutes:120,type:"Study",topic:nextTopic("Quant"),done:false,logged:false},
+    {id:"break2",subject:null,start:"11:30",end:"12:00",minutes:0,type:"Break",title:"☕ Break",done:false,logged:false},
+    {id:"reasoning",subject:"Reasoning",start:"12:00",end:"13:30",minutes:90,type:"Study",topic:nextTopic("Reasoning"),done:false,logged:false},
+    {id:"break3",subject:null,start:"13:30",end:"14:00",minutes:0,type:"Break",title:"🍱 Lunch",done:false,logged:false},
+    {id:"english",subject:"English",start:"14:00",end:"16:00",minutes:120,type:"Study",topic:nextTopic("English"),done:false,logged:false},
+    {id:"gym",subject:null,start:"16:00",end:"18:00",minutes:0,type:"Break",title:"🏋️ Gym / travel / recovery",done:false,logged:false},
+    {id:"break4",subject:null,start:"18:00",end:"18:30",minutes:0,type:"Break",title:"🚿 Shower + snack",done:false,logged:false},
+    {id:"recap",subject:null,start:"18:30",end:"19:30",minutes:60,type:"Recap",title:"🔄 Daily Recap — recall today's topics + mistakes",done:false,logged:false}
+  ];
+}
+function planForToday(){
+  var day=today();
+  if(!db.plans)db.plans={};
+  if(db.settings.plannerVersion!=="topic-select-v4"){
+    db.plans={};
+    db.settings.plannerVersion="topic-select-v4";
+    save();
+  }
+  if(!db.plans[day]){
+    db.plans[day]=fixedTemplate();
+    save();
+  }
+  return db.plans[day];
+}
 function planner(p){
   var day=today(), sunday=new Date(day+"T12:00:00").getDay()===0, tasks=planForToday();
   var studyMinutes=tasks.reduce(function(s,x){return s+x.minutes;},0);
