@@ -207,9 +207,11 @@ function planForToday(){
   return db.plans[day];
 }
 function planner(p){
-  var day=today(),sunday=new Date(day+"T12:00:00").getDay()===0,tasks=planForToday(),target=8*60;
-  var scheduled=tasks.reduce(function(s,x){return s+Number(x.minutes||0);},0),completed=tasks.filter(function(x){return x.type!=="Break"&&x.done;}).reduce(function(s,x){return s+Number(x.minutes||0);},0);
-  var plannerLogs=db.study.filter(function(x){return x.date===day&&x.source==="Planner";});
+  var day=today(),sunday=new Date(day+"T12:00:00").getDay()===0,tasks=planForToday(),target=Number(db.settings.hours||8)*60;
+  var scheduled=tasks.reduce(function(s,x){return s+Number(x.minutes||0);},0);
+  var planCompleted=tasks.filter(function(x){return x.type!=="Break"&&x.done;}).reduce(function(s,x){return s+Number(x.minutes||0);},0);
+  var actualToday=db.study.filter(function(x){return x.date===day;}),actualMinutes=actualToday.reduce(function(s,x){return s+Number(x.minutes||0);},0);
+  var plannerLogs=actualToday.filter(function(x){return x.source==="Planner";}),planPct=scheduled?Math.round(planCompleted/scheduled*100):0;
   var dateText=new Date(day+"T12:00:00").toLocaleDateString("en-IN",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
   var rows=tasks.map(function(x,i){
     if(x.type==="Break")return "<div class='row' style='padding:11px 0;opacity:.72'><div><b>"+esc(x.title||"Break")+"</b><div class='muted' style='font-size:12px'>"+x.start+" – "+x.end+"</div></div><span class='badge'>BREAK</span></div>";
@@ -217,11 +219,13 @@ function planner(p){
     var control=x.type==="Recap"?"<div class='notice'>Recall the day's topics, review mistakes and write tomorrow's first task.</div>":"<select class='plan-topic' data-i='"+i+"'><option value=''>Select topic</option>"+topicOptions(x.subject||"",x.topic||"")+"</select>";
     return "<div class='row' style='padding:14px 0;gap:14px;align-items:flex-start'><div style='display:flex;gap:12px;min-width:0;flex:1'><input class='plan-check' data-i='"+i+"' type='checkbox' "+(x.done?"checked":"")+" style='width:19px;height:19px;margin-top:3px;accent-color:#83a1ff'><div style='min-width:0;flex:1'><div style='font-weight:850'>"+title+"</div><div class='muted' style='font-size:12px;margin:2px 0 8px'>"+x.start+" – "+x.end+" • "+x.minutes+" min</div>"+control+(x.done&&x.logId?"<div class='topic-mini'>🔗 Logged in Study Log</div>":"")+"</div></div><span class='badge'>"+(x.done?"✅ DONE":x.type.toUpperCase())+"</span></div>";
   }).join("");
-  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+dateText+" • "+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+"</p></div><div class='topmeta'><span class='badge'>🎯 8h target</span><span class='badge'>🔗 Study Log connected</span></div></div>"+
-  "<div class='notice section'>"+(sunday?"<b class='warn'>Sunday mode:</b> choose revision topics. Completing a block creates a linked Revision session in Study Log.":"<b>Plan → Execute → Log:</b> choose exact topics, save your plan, then tick completed blocks. Each completed block is automatically recorded in Study Log.")+"</div>"+
-  "<div class='grid cards section'><div class='card'><div class='kicker'>TARGET</div><div class='big'>8h</div><div class='muted'>Focused study goal</div></div><div class='card'><div class='kicker'>SCHEDULED</div><div class='big'>"+Math.round(scheduled/60*10)/10+"h</div><div class='muted'>Focused blocks</div></div><div class='card'><div class='kicker'>COMPLETED</div><div class='big'>"+Math.round(completed/60*10)/10+"h</div><div class='bar'><i style='width:"+Math.min(100,completed/target*100)+"%'></i></div></div><div class='card'><div class='kicker'>LOGGED</div><div class='big'>"+Math.round(plannerLogs.reduce(function(a,x){return a+Number(x.minutes||0);},0)/60*10)/10+"h</div><div class='muted'>Linked to Study Log</div></div></div>"+
-  "<div class='card section'><div class='row' style='border-bottom:0'><div><h2>🗓️ Your Fixed Daily Routine</h2><div class='muted'>The checkbox and Study Log are linked.</div></div><span class='badge'>"+plannerLogs.length+" linked sessions</span></div>"+rows+
+
+  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+dateText+" • "+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+"</p></div><div class='topmeta'><span class='badge'>🎯 "+(target/60)+"h target</span><span class='badge'>🔗 Study Log connected</span></div></div>"+
+  "<div class='notice section'>"+(sunday?"<b class='warn'>Sunday mode:</b> choose revision topics. Checking a block records the completed revision session in Study Log.":"<b>Plan → Execute → Log:</b> the checkbox measures your planned blocks completed. Study Log measures your actual study, including sessions you entered manually.")+"</div>"+
+  "<div class='grid cards section'><div class='card'><div class='kicker'>TARGET</div><div class='big'>"+(target/60)+"h</div><div class='muted'>Minimum daily goal</div></div><div class='card'><div class='kicker'>SCHEDULED</div><div class='big'>"+Math.round(scheduled/60*10)/10+"h</div><div class='muted'>Focused plan time</div></div><div class='card'><div class='kicker'>PLAN COMPLETED</div><div class='big'>"+Math.round(planCompleted/60*10)/10+"h</div><div class='bar'><i style='width:"+planPct+"%'></i></div><div class='muted' style='margin-top:5px'>"+planPct+"% of planned blocks</div></div><div class='card'><div class='kicker'>ACTUAL STUDY</div><div class='big'>"+Math.round(actualMinutes/60*10)/10+"h</div><div class='muted'>"+actualToday.length+" Study Log sessions today</div></div></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><div><h2>🗓️ Your Fixed Daily Routine</h2><div class='muted'>Checked blocks are linked to Study Log. Manual Study Log entries count toward Actual Study but do not automatically check a plan box.</div></div><span class='badge'>"+plannerLogs.length+" planner-linked</span></div>"+rows+
   "<div class='study-form-actions' style='margin-top:16px'><button id='savePlan' class='btn'>💾 Save Today's Plan</button><button id='resetPlan' class='btn alt'>↩ Reset Today</button></div></div>";
+
   p.querySelectorAll(".plan-topic").forEach(function(sel){sel.addEventListener("change",function(){var t=tasks[Number(sel.dataset.i)];t.topic=sel.value;if(t.done&&t.logId){var z=db.study.find(function(x){return x.id===t.logId;});if(z)z.topic=t.topic;}save();});});
   p.querySelectorAll(".plan-check").forEach(function(box){box.addEventListener("change",function(){
     var t=tasks[Number(box.dataset.i)];
@@ -234,7 +238,11 @@ function planner(p){
         db.study.push(rec);t.logId=rec.id;t.logged=true;
       }
     }else{
-      if(t.logId){var linked=db.study.find(function(x){return x.id===t.logId;});if(!confirm("Unchecking removes its linked Study Log session"+(linked&&Number(linked.questions)?". It currently contains "+linked.questions+" questions.":"."))){box.checked=true;return;}db.study=db.study.filter(function(x){return x.id!==t.logId;});t.logId=null;t.logged=false;}
+      if(t.logId){
+        var linked=db.study.find(function(x){return x.id===t.logId;});
+        if(!confirm("Unchecking removes its linked Study Log session"+(linked&&Number(linked.questions)?". It currently contains "+linked.questions+" questions.":"."))){box.checked=true;return;}
+        db.study=db.study.filter(function(x){return x.id!==t.logId;});t.logId=null;t.logged=false;
+      }
       t.done=false;
     }
     save();planner(p);
