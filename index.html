@@ -182,11 +182,22 @@ function syllabus(p){
   p.querySelectorAll(".status").forEach(function(s){var i=Number(s.dataset.i);s.value=db.topics[i].status;s.addEventListener("change",function(){var x=db.topics[i],old=x.status;x.status=s.value;if(s.value==="Completed"&&old!=="Completed"){x.studied=today();x.weekly=nextSunday(x.studied);x.monthly=addDays(x.studied,30);x.weeklyDone=false;x.monthlyDone=false;}save();render();});});
 }
 function study(p){
-  p.innerHTML="<h1>Study Log</h1><div class=card><form id=studyForm><input name=date type=date value="+today()+" required><select name=subject>"+Object.keys(S).map(function(s){return "<option>"+s+"</option>";}).join("")+"</select><input name=minutes type=number min=1 placeholder='Minutes' required><input name=topic placeholder='Topic'><button class=btn>Add Study</button></form></div>"+
-  "<div class=card style='margin-top:14px'><table><tr><th>Date</th><th>Subject</th><th>Topic</th><th>Minutes</th></tr>"+db.study.slice().reverse().map(function(x){return "<tr><td>"+x.date+"</td><td>"+x.subject+"</td><td>"+esc(x.topic)+"</td><td>"+x.minutes+"</td></tr>";}).join("")+"</table></div>";
-  document.getElementById("studyForm").addEventListener("submit",function(e){e.preventDefault();var f=new FormData(e.target);db.study.push({date:f.get("date"),subject:f.get("subject"),minutes:f.get("minutes"),topic:f.get("topic")});save();render();});
-}
-function revision(p){
+  var totalQ=db.study.reduce(function(s,x){return s+Number(x.questions||0);},0);
+  p.innerHTML="<div class='topline'><div><h1>Study Log</h1><p class='muted page-sub'>Record what you actually studied — time + questions solved.</p></div><div class='topmeta'><span class='badge'>📝 "+totalQ+" questions solved</span><span class='badge'>⏱️ "+Math.round(db.study.reduce(function(s,x){return s+Number(x.minutes||0);},0)/60)+"h studied</span></div></div>"+
+  "<div class='card section'><form id='studyForm'><div class='grid two'><input name='date' type='date' value='"+today()+"' required><select name='subject'>"+Object.keys(S).map(function(s){return "<option>"+s+"</option>";}).join("")+"</select></div>"+
+  "<div class='grid two'><input name='minutes' type='number' min='1' placeholder='Study minutes' required><input name='questions' type='number' min='0' placeholder='Questions solved'></div>"+
+  "<input name='topic' placeholder='Topic studied'><button class='btn' type='submit'>+ Add Study</button></form></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><h2>📚 Study History</h2><span class='badge'>Questions solved included</span></div>"+
+  (db.study.length?"<table><tr><th>Date</th><th>Subject</th><th>Topic</th><th>Minutes</th><th>Questions</th></tr>"+db.study.slice().reverse().map(function(x){
+    return "<tr><td>"+x.date+"</td><td>"+esc(x.subject)+"</td><td>"+esc(x.topic)+"</td><td>"+x.minutes+"</td><td><b>"+Number(x.questions||0)+"</b></td></tr>";
+  }).join("")+"</table>":"<div class='empty'>No study sessions logged yet.</div>")+"</div>";
+  document.getElementById("studyForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var f=new FormData(e.target);
+    db.study.push({date:f.get("date"),subject:f.get("subject"),minutes:f.get("minutes"),questions:f.get("questions")||0,topic:f.get("topic")});
+    save();render();
+  });
+}function revision(p){
   var r=revisions();
   var weekly=r.filter(function(x){return x.type==="Weekly";});
   var monthly=r.filter(function(x){return x.type==="Monthly";});
