@@ -76,6 +76,53 @@ window.addEventListener("hashchange",render);
 
 function render(){var p=location.hash.slice(1)||"dashboard";document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("active",b.dataset.p===p);});var fn={dashboard:dashboard,planner:planner,syllabus:syllabus,study:study,revision:revision,pyq:pyq,mocks:mocks,analytics:analytics,backup:backup}[p]||dashboard;fn(page);}
 
+function consistencyStats(){
+  var current=0,d=new Date();
+  while(true){
+    var s=d.toISOString().slice(0,10);
+    var m=db.study.filter(function(x){return x.date===s;}).reduce(function(a,x){return a+Number(x.minutes||0);},0);
+    if(m<=0)break;
+    current++;d.setDate(d.getDate()-1);
+    if(current>999)break;
+  }
+  var best=0,run=0,seen={};
+  db.study.forEach(function(x){seen[x.date]=true;});
+  var dates=Object.keys(seen).sort();
+  for(var i=0;i<dates.length;i++){
+    if(i===0){run=1;}else{
+      var prev=new Date(dates[i-1]+"T12:00:00"),cur=new Date(dates[i]+"T12:00:00");
+      var gap=Math.round((cur-prev)/86400000);
+      run=gap===1?run+1:1;
+    }
+    if(run>best)best=run;
+  }
+  var wstart=new Date();wstart.setDate(wstart.getDate()-wstart.getDay());wstart.setHours(0,0,0,0);
+  var weekM=db.study.filter(function(x){return new Date(x.date+"T12:00:00")>=wstart;}).reduce(function(a,x){return a+Number(x.minutes||0);},0);
+  return {current:current,best:best,weekM:weekM};
+}
+function dashboard(p){
+  var r=revisions(),w=db.topics.filter(function(x){return x.acc!=null&&x.acc<70;}).sort(function(a,b){return a.acc-b.acc;}).slice(0,5);
+  var cs=consistencyStats(),weekTarget=7*8*60,weekPct=Math.min(100,Math.round(cs.weekM/weekTarget*100));
+  var message=cs.current>=30?"🔥 30+ days. You're building an exam-ready habit.":cs.current>=14?"🚀 Two weeks strong. Keep the chain alive.":cs.current>=7?"💪 One week down. Make the next one stronger.":cs.current>=3?"⚡ Momentum is building. Don't break it today.":"🌱 Start the streak today. One focused day is enough to begin.";
+  p.innerHTML="<div class='topline'><div><h1>SSC CGL Tracker 2027</h1><p class='muted page-sub'>Your preparation command center • 8 hours/day • Sunday revision • full mocks after 50%</p></div><div class='topmeta'><span class='badge'>📅 "+new Date(today()+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})+"</span></div></div>"+
+  "<div class='card section' style='background:linear-gradient(135deg,#14294a,#101f37 58%,#17264a);border-color:#415f92'><div class='topline'><div><div class='kicker'>🔥 CONSISTENCY JOURNEY</div><div style='font-size:24px;font-weight:850;margin-top:5px'>"+message+"</div><div class='muted' style='margin-top:5px'>Show up today. Your future score is built one day at a time.</div></div><div class='topmeta'><span class='badge' style='font-size:14px;padding:7px 11px'>🔥 "+cs.current+" day streak</span><span class='badge'>🏆 Best: "+cs.best+" days</span></div></div>"+
+  "<div class='grid two' style='margin-top:15px'><div><div class='row' style='border-bottom:0;padding:0 0 8px'><b>This week's 56-hour goal</b><span class='badge'>"+Math.round(cs.weekM/60*10)/10+" / 56h</span></div><div class='bar'><i style='width:"+weekPct+"%'></i></div><div class='muted' style='font-size:12px;margin-top:7px'>"+weekPct+"% of your weekly study target • every logged session counts.</div></div><div class='notice' style='border-left-color:#8ba5ff'><b>Today's challenge</b><br><span class='muted'>Complete your fixed routine, tick the blocks, and protect your streak.</span></div></div></div>"+
+  "<div class='grid cards section'><div class=card><div class=kicker>READINESS</div><div class=big>"+readiness()+"%</div><div class=bar><i style='width:"+readiness()+"%'></i></div></div>"+
+  "<div class=card><div class=kicker>SYLLABUS</div><div class=big>"+syllabusPct()+"%</div><div class=muted>"+completedTopics()+"/"+totalTopics()+" topics</div></div>"+
+  "<div class=card><div class=kicker>STUDY HOURS</div><div class=big>"+Math.round(totalMinutes()/60)+"</div><div class=muted'>total logged</div></div>"+
+  "<div class=card><div class=kicker>REVISION QUEUE</div><div class=big>"+r.length+"</div><div class=muted>"+r.filter(function(x){return x.over;}).length+" overdue</div></div></div>"+
+  "<div class='grid two section'><div class=card><h2>⚠️ Weak Topics</h2>"+(w.length?"<table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+w.map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class=bad>"+x.acc+"%</td></tr>";}).join("")+"</table>":"<div class=muted>Log PYQ accuracy to detect weak chapters.</div>")+"</div>"+
+  "<div class=card><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.type+"</span></div>";}).join("")||"<div class=good>Revision queue clear.</div>")+"</div></div>"+
+  "<div class=card style='margin-top:18px'><div class='row' style='border-bottom:0'><div><div class='kicker'>YOUR STUDY HEATMAP</div><h2 style='margin:4px 0 0'>🔥 Keep the chain alive</h2></div><span class='badge'>Last 140 days</span></div><div class=heat style='margin-top:12px'>"+heat()+"</div><div class='muted' style='margin-top:10px;font-size:12px'>Each square is a day. More study time = stronger intensity.</div></div>";
+}
+function heat(){var out="";for(var i=139;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var day=d.toISOString().slice(0,10),m=db.study.filter(function(x){return x.date===day;}).reduce(function(a,x){return a+Number(x.minutes||0);},0),l=m>=480?4:m>=240?3:m>=60?2:m?1:0;out+="<div class='day l"+l+"' title='"+day+"'></div>";}return out;}
+var labels={dashboard:"🏠 Dashboard",planner:"🗓️ Planner",syllabus:"📚 Syllabus",study:"⏱️ Study Log",revision:"🔁 Revision",pyq:"📝 PYQ",mocks:"🎯 Mocks",analytics:"📊 Analytics",backup:"💾 Backup"};
+nav.innerHTML=Object.keys(labels).map(function(k){return "<button data-p="+k+">"+labels[k]+"</button>";}).join("");
+nav.addEventListener("click",function(e){if(e.target.dataset.p)location.hash=e.target.dataset.p;});
+window.addEventListener("hashchange",render);
+
+function render(){var p=location.hash.slice(1)||"dashboard";document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("active",b.dataset.p===p);});var fn={dashboard:dashboard,planner:planner,syllabus:syllabus,study:study,revision:revision,pyq:pyq,mocks:mocks,analytics:analytics,backup:backup}[p]||dashboard;fn(page);}
+
 function dashboard(p){
   var r=revisions(),w=db.topics.filter(function(x){return x.acc!=null&&x.acc<70;}).sort(function(a,b){return a.acc-b.acc;}).slice(0,5);
   p.innerHTML="<h1>SSC CGL Tracker 2027</h1><p class=muted>8 hours/day • Sunday weekly revision • full mocks after 50%</p>"+
