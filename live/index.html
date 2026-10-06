@@ -46,6 +46,8 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 .pyq-progress{display:flex;align-items:center;gap:12px;margin-top:10px}.pyq-progress-track{flex:1;height:8px;background:#1d2d49;border-radius:99px;overflow:hidden}.pyq-progress-track i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px}.pyq-mini{font-size:12px;color:var(--muted)}.pyq-focus{border-color:#486a9e!important;background:linear-gradient(145deg,#142a4a,#101d33 70%)!important}.pyq-trend{display:flex;align-items:end;gap:8px;height:150px;padding:14px 4px 4px}.pyq-barwrap{flex:1;min-width:32px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:5px}.pyq-bar{width:100%;max-width:42px;min-height:5px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:7px 7px 3px 3px}.pyq-barlabel{font-size:10px;color:var(--muted);white-space:nowrap}.pyq-barvalue{font-size:11px;font-weight:800}.pyq-history td,.pyq-history th{white-space:nowrap}.pyq-actions{display:flex;gap:6px;justify-content:flex-end}.danger-btn{background:#351c27!important;border-color:#693344!important;color:#ffb4c1!important}.pyq-empty{padding:18px;border:1px dashed #304867;border-radius:10px;color:var(--muted);text-align:center}@media(max-width:850px){.pyq-trend{overflow-x:auto}.pyq-barwrap{min-width:48px}.pyq-history{overflow-x:auto}.pyq-history table{min-width:720px}}
 
 .analytics-hero{background:linear-gradient(135deg,#172d50,#0f1e36 58%,#142743)!important;border-color:#486a9e!important}.metric-note{font-size:12px;color:var(--muted)}.analytics-subject{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.subject-card{min-width:0;overflow:hidden}.subject-metric{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;min-width:0;width:100%}.subject-metric>div{min-width:0;overflow:hidden;background:#0d1a2e;border:1px solid #253d60;border-radius:10px;padding:10px}.subject-progress{height:8px;background:#1e304d;border-radius:99px;overflow:hidden;margin-top:7px}.subject-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px}.mini-chart{display:flex;align-items:end;gap:7px;height:170px;padding:18px 5px 0;overflow-x:auto}.chart-col{height:100%;min-width:30px;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}.chart-bar{width:24px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:6px 6px 2px 2px;min-height:3px}.chart-val{font-size:10px;font-weight:800}.chart-date{font-size:9px;color:var(--muted);white-space:nowrap}.rank{width:25px;height:25px;border-radius:8px;background:#1a2c4b;display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:#cbd8f3}.trend-pill{padding:5px 8px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;font-size:11px}.analytics-table td{vertical-align:middle}.subject-name{font-weight:850}.subject-stat{font-size:12px;color:var(--muted)}@media(max-width:850px){.analytics-subject{grid-template-columns:1fr}.subject-metric{grid-template-columns:1fr}.mini-chart{min-width:460px}}
+
+.study-hero{background:linear-gradient(135deg,#172d50,#0f1e36 58%,#142743)!important;border-color:#486a9e!important}.study-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.study-summary>div{background:#0d1a2e;border:1px solid #294465;border-radius:12px;padding:13px;min-width:0}.metric-note{font-size:12px;color:var(--muted)}.session-pill{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;color:#cbd8f3;font-size:11px;font-weight:800}.study-history{overflow-x:auto}.study-history table{min-width:900px}.study-history td{vertical-align:middle}.study-actions{display:flex;gap:6px;justify-content:flex-end}.study-plan-list{display:grid;gap:8px}.study-plan-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#0d1a2e;border:1px solid #253d60;border-radius:10px}.study-plan-row>div{min-width:0}.study-plan-topic{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.study-form-actions{display:flex;gap:8px;flex-wrap:wrap}.topic-mini{font-size:11px;color:var(--muted);margin-top:5px}@media(max-width:850px){.study-summary{grid-template-columns:repeat(2,1fr)}.study-plan-row{align-items:flex-start;flex-direction:column}.study-actions{justify-content:flex-start}}
 </style></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
@@ -61,7 +63,30 @@ try{db=JSON.parse(localStorage.getItem("cgl2027")||"null");}catch(e){db=null;}
 if(!db || !Array.isArray(db.topics)){db={topics:makeTopics(),study:[],mocks:[],settings:{hours:8}};}
 if(!db.study)db.study=[]; if(!db.mocks)db.mocks=[]; if(!db.settings)db.settings={hours:8};
 function save(){localStorage.setItem("cgl2027",JSON.stringify(db));}
-function today(){return new Date().toISOString().slice(0,10);}
+function uid(prefix){return String(prefix||"id")+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);}
+function localISO(d){
+  d=d||new Date();
+  var y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+  return y+"-"+m+"-"+day;
+}
+function today(){return localISO(new Date());}
+function normalizeDb(){
+  if(!db.study)db.study=[];
+  if(!db.mocks)db.mocks=[];
+  if(!db.settings)db.settings={hours:8};
+  if(!db.plans)db.plans={};
+  if(!db.revisionHistory)db.revisionHistory=[];
+  if(!db.pyqAttempts)db.pyqAttempts=[];
+  db.study.forEach(function(x,i){
+    if(!x.id)x.id=uid("study"+i);
+    if(!x.sessionType)x.sessionType=x.type||"Manual";
+    if(!x.type)x.type=x.sessionType||"Manual";
+    if(!x.source)x.source="Manual";
+    if(x.questions==null)x.questions=0;
+  });
+  db.pyqAttempts.forEach(function(x,i){if(!x.id)x.id=uid("pyq"+i);});
+}
+normalizeDb();
 function addDays(s,n){var d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function nextSunday(s){var d=new Date(s+"T12:00:00"),n=(7-d.getDay())%7;if(n===0)n=7;d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch];});}
@@ -181,131 +206,83 @@ function planForToday(){
   return db.plans[day];
 }
 function planner(p){
-  var day=today(), sunday=new Date(day+"T12:00:00").getDay()===0, tasks=planForToday();
-  var target=8*60;
-  var studyMinutes=tasks.reduce(function(s,x){return s+Number(x.minutes||0);},0);
-  var doneMinutes=tasks.filter(function(x){return x.type!=="Break"&&x.done;}).reduce(function(s,x){return s+Number(x.minutes||0);},0);
-  var remaining=Math.max(0,target-doneMinutes);
+  var day=today(),sunday=new Date(day+"T12:00:00").getDay()===0,tasks=planForToday(),target=8*60;
+  var scheduled=tasks.reduce(function(s,x){return s+Number(x.minutes||0);},0),completed=tasks.filter(function(x){return x.type!=="Break"&&x.done;}).reduce(function(s,x){return s+Number(x.minutes||0);},0);
+  var plannerLogs=db.study.filter(function(x){return x.date===day&&x.source==="Planner";});
   var dateText=new Date(day+"T12:00:00").toLocaleDateString("en-IN",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
   var rows=tasks.map(function(x,i){
     if(x.type==="Break")return "<div class='row' style='padding:11px 0;opacity:.72'><div><b>"+esc(x.title||"Break")+"</b><div class='muted' style='font-size:12px'>"+x.start+" – "+x.end+"</div></div><span class='badge'>BREAK</span></div>";
-    var topic=x.topic||"";
-    var subject=x.subject||"";
-    var topicSelect=subject?"<select class='plan-topic' data-i='"+i+"'><option value=''>Select topic</option>"+topicOptions(subject,topic)+"</select>":"";
-    var title=(sunday&&subject?"🔁 Weekly Revision — ":"📚 ")+esc(subject);
-    if(x.type==="Recap")title="🔄 Daily Recap";
-    return "<div class='row' style='padding:14px 0;gap:14px;align-items:flex-start'><div style='display:flex;gap:12px;min-width:0;flex:1'>"+
-      "<input class='plan-check' data-i='"+i+"' type='checkbox' "+(x.done?"checked":"")+" style='width:19px;height:19px;margin-top:3px;accent-color:#83a1ff'>"+
-      "<div style='min-width:0;flex:1'><div style='font-weight:850'>"+title+"</div><div class='muted' style='font-size:12px;margin:2px 0 8px'>"+x.start+" – "+x.end+" • "+x.minutes+" min</div>"+
-      (x.type==="Recap"?"<div class='notice'>Recall the day's topics without notes, write mistakes, and note tomorrow's first task.</div>":topicSelect)+"</div></div><span class='badge'>"+(x.done?"✅ DONE":x.type.toUpperCase())+"</span></div>";
+    var title=x.type==="Recap"?"🔄 Daily Recap":(sunday?"🔁 Weekly Revision — ":"📚 ")+esc(x.subject||"");
+    var control=x.type==="Recap"?"<div class='notice'>Recall the day's topics, review mistakes and write tomorrow's first task.</div>":"<select class='plan-topic' data-i='"+i+"'><option value=''>Select topic</option>"+topicOptions(x.subject||"",x.topic||"")+"</select>";
+    return "<div class='row' style='padding:14px 0;gap:14px;align-items:flex-start'><div style='display:flex;gap:12px;min-width:0;flex:1'><input class='plan-check' data-i='"+i+"' type='checkbox' "+(x.done?"checked":"")+" style='width:19px;height:19px;margin-top:3px;accent-color:#83a1ff'><div style='min-width:0;flex:1'><div style='font-weight:850'>"+title+"</div><div class='muted' style='font-size:12px;margin:2px 0 8px'>"+x.start+" – "+x.end+" • "+x.minutes+" min</div>"+control+(x.done&&x.logId?"<div class='topic-mini'>🔗 Logged in Study Log</div>":"")+"</div></div><span class='badge'>"+(x.done?"✅ DONE":x.type.toUpperCase())+"</span></div>";
   }).join("");
-  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+dateText+" • "+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+"</p></div><div class='topmeta'><span class='badge'>🎯 8h target</span><span class='badge'>⏱️ Breaks included</span></div></div>"+
-  "<div class='notice section'>"+(sunday?"<b class='warn'>Sunday mode:</b> use the same time blocks, but select revision topics instead of new learning.":"<b>Morning setup:</b> choose one exact topic for each subject block, save it, then tick each block when completed.")+"</div>"+
-  "<div class='grid cards section'><div class='card'><div class='kicker'>TARGET</div><div class='big'>8h</div><div class='muted'>Focused study goal</div></div><div class='card'><div class='kicker'>SCHEDULED</div><div class='big'>"+Math.round(studyMinutes/60*10)/10+"h</div><div class='muted'>Includes 30-min recap</div></div><div class='card'><div class='kicker'>COMPLETED</div><div class='big'>"+Math.round(doneMinutes/60*10)/10+"h</div><div class='bar'><i style='width:"+Math.min(100,doneMinutes/target*100)+"%'></i></div></div><div class='card'><div class='kicker'>REMAINING</div><div class='big'>"+Math.round(remaining/60*10)/10+"h</div><div class='muted'>Study still to complete</div></div></div>"+
-  "<div class='card section'><div class='row' style='border-bottom:0'><h2>🗓️ Your Fixed Daily Routine</h2><span class='badge'>Choose topics in blue dropdowns</span></div>"+rows+
-  "<div style='display:flex;gap:8px;margin-top:16px'><button id='savePlan' class='btn'>💾 Save Today's Plan</button><button id='resetPlan' class='btn alt'>↩ Reset Today</button></div></div>";
-  p.querySelectorAll(".plan-topic").forEach(function(sel){sel.addEventListener("change",function(){tasks[Number(sel.dataset.i)].topic=sel.value;});});
+  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+dateText+" • "+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+"</p></div><div class='topmeta'><span class='badge'>🎯 8h target</span><span class='badge'>🔗 Study Log connected</span></div></div>"+
+  "<div class='notice section'>"+(sunday?"<b class='warn'>Sunday mode:</b> choose revision topics. Completing a block creates a linked Revision session in Study Log.":"<b>Plan → Execute → Log:</b> choose exact topics, save your plan, then tick completed blocks. Each completed block is automatically recorded in Study Log.")+"</div>"+
+  "<div class='grid cards section'><div class='card'><div class='kicker'>TARGET</div><div class='big'>8h</div><div class='muted'>Focused study goal</div></div><div class='card'><div class='kicker'>SCHEDULED</div><div class='big'>"+Math.round(scheduled/60*10)/10+"h</div><div class='muted'>Focused blocks</div></div><div class='card'><div class='kicker'>COMPLETED</div><div class='big'>"+Math.round(completed/60*10)/10+"h</div><div class='bar'><i style='width:"+Math.min(100,completed/target*100)+"%'></i></div></div><div class='card'><div class='kicker'>LOGGED</div><div class='big'>"+Math.round(plannerLogs.reduce(function(a,x){return a+Number(x.minutes||0);},0)/60*10)/10+"h</div><div class='muted'>Linked to Study Log</div></div></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><div><h2>🗓️ Your Fixed Daily Routine</h2><div class='muted'>The checkbox and Study Log are linked.</div></div><span class='badge'>"+plannerLogs.length+" linked sessions</span></div>"+rows+
+  "<div class='study-form-actions' style='margin-top:16px'><button id='savePlan' class='btn'>💾 Save Today's Plan</button><button id='resetPlan' class='btn alt'>↩ Reset Today</button></div></div>";
+  p.querySelectorAll(".plan-topic").forEach(function(sel){sel.addEventListener("change",function(){var t=tasks[Number(sel.dataset.i)];t.topic=sel.value;if(t.done&&t.logId){var z=db.study.find(function(x){return x.id===t.logId;});if(z)z.topic=t.topic;}save();});});
   p.querySelectorAll(".plan-check").forEach(function(box){box.addEventListener("change",function(){
-    var task=tasks[Number(box.dataset.i)];task.done=box.checked;
-    if(box.checked&&!task.logged&&task.subject&&task.minutes>0){
-      db.study.push({date:day,subject:task.subject,minutes:task.minutes,questions:0,topic:task.topic||"Unspecified"});
-      task.logged=true;
+    var t=tasks[Number(box.dataset.i)];
+    if(box.checked){
+      if(t.subject&&!t.topic){alert("Select a topic before completing this study block.");box.checked=false;return;}
+      t.done=true;
+      if(!t.logId){
+        var typ=t.type==="Recap"?"Recap":(sunday?"Revision":"Learning"),sub=t.subject||"Overall",top=t.topic||(t.type==="Recap"?"Daily Recap":"Unspecified");
+        var rec={id:uid("study"),date:day,subject:sub,topic:top,minutes:Number(t.minutes||0),questions:0,type:typ,sessionType:typ,source:"Planner",sourceId:day+"|"+t.id,plannerBlock:t.id};
+        db.study.push(rec);t.logId=rec.id;t.logged=true;
+      }
+    }else{
+      if(t.logId){var linked=db.study.find(function(x){return x.id===t.logId;});if(!confirm("Unchecking removes its linked Study Log session"+(linked&&Number(linked.questions)?". It currently contains "+linked.questions+" questions.":"."))){box.checked=true;return;}db.study=db.study.filter(function(x){return x.id!==t.logId;});t.logId=null;t.logged=false;}
+      t.done=false;
     }
     save();planner(p);
   });});
   document.getElementById("savePlan").addEventListener("click",function(){save();var b=document.getElementById("savePlan");b.textContent="✅ Saved for today";setTimeout(function(){if(document.getElementById("savePlan"))document.getElementById("savePlan").textContent="💾 Save Today's Plan";},1000);});
-  document.getElementById("resetPlan").addEventListener("click",function(){if(confirm("Reset today's selected topics and completed blocks?")){delete db.plans[day];save();planner(p);}});
+  document.getElementById("resetPlan").addEventListener("click",function(){if(!confirm("Reset today's plan? Completed planner blocks and their Study Log entries will be removed."))return;db.study=db.study.filter(function(x){return !(x.source==="Planner"&&x.date===day);});delete db.plans[day];save();planner(p);});
 }
 function syllabus(p){
-  var subjects=Object.keys(S);
-  var total=db.topics.length,completed=db.topics.filter(function(x){return x.status==="Completed";}).length,learning=db.topics.filter(function(x){return x.status==="Learning";}).length;
-  var overall=total?Math.round(completed/total*100):0;
-  function subjectStats(s){
-    var arr=db.topics.filter(function(x){return x.s===s;});
-    var done=arr.filter(function(x){return x.status==="Completed";}).length;
-    var learn=arr.filter(function(x){return x.status==="Learning";}).length;
-    return {total:arr.length,done:done,learn:learn,pct:arr.length?Math.round(done/arr.length*100):0};
-  }
-  p.innerHTML="<div class='topline'><div><h1>Syllabus Tracker</h1><p class='muted page-sub'>Your syllabus is the backbone of the tracker. Finish topics here and the rest of the system follows automatically.</p></div>"+
-    "<div class='topmeta'><span class='badge'>✅ "+completed+" completed</span><span class='badge'>🟡 "+learning+" learning</span><span class='badge'>📚 "+total+" total topics</span></div></div>"+
-    "<div class='card section' style='background:linear-gradient(135deg,#162b4b,#0e1d34 60%,#142440);border-color:#3f5d8d'>"+
-      "<div class='topline'><div><div class='kicker'>OVERALL SYLLABUS PROGRESS</div><div style='font-size:34px;font-weight:900;margin-top:5px'>"+overall+"%</div><div class='muted'>"+completed+" of "+total+" topics completed</div></div><div style='font-size:50px;font-weight:900'>📚</div></div>"+
-      "<div class='bar' style='margin-top:14px;height:12px'><i style='width:"+overall+"%'></i></div>"+
-      "<div class='row' style='border-bottom:0;margin-top:8px'><span class='muted'>🟢 Completed topics drive mock unlock</span><span class='"+(overall>=50?"good":"warn")+"'>"+(overall>=50?"🎯 Full mocks unlocked":"🔒 "+(50-overall)+"% to mock unlock")+"</span></div>"+
-    "</div>"+
-    "<div class='grid cards section'>"+
-      subjects.map(function(s){var st=subjectStats(s);return "<div class='card subject-card' data-subject='"+s+"' style='cursor:pointer'><div class='row' style='border-bottom:0'><div><div class='kicker'>"+s.toUpperCase()+"</div><div style='font-size:25px;font-weight:900;margin-top:3px'>"+st.pct+"%</div></div><span class='badge'>"+st.done+"/"+st.total+"</span></div><div class='bar' style='margin:12px 0 8px'><i style='width:"+st.pct+"%'></i></div><div class='muted' style='font-size:12px'>"+st.learn+" learning • "+(st.total-st.done-st.learn)+" not started</div></div>";}).join("")+
-    "</div>"+
-    "<div class='card section'><div class='topline'><div><div class='kicker'>TOPIC TRACKER</div><h2 style='margin:4px 0 0'>Choose a subject</h2></div><div style='min-width:230px'><select id='syllabusSubject'>"+subjects.map(function(s){return "<option>"+s+"</option>";}).join("")+"</select></div></div>"+
-      "<div id='topicPanel' style='margin-top:14px'></div></div>"+
-    "<div class='notice section'>💡 <b>How this works:</b> <b>Not started → Learning → Completed.</b> When a topic becomes Completed, it gets its next Sunday weekly revision and a 30-day monthly revision automatically. Its progress also counts toward the 50% full-mock unlock.</div>";
-
+  var subjects=Object.keys(S),total=db.topics.length,completed=db.topics.filter(function(x){return x.status==="Completed";}).length,learning=db.topics.filter(function(x){return x.status==="Learning";}).length,overall=total?Math.round(completed/total*100):0;
+  function studyStats(id){var a=db.study.filter(function(z){return z.topicId===id||(z.subject+"|"+z.topic)===id;}),mins=a.reduce(function(s,z){return s+Number(z.minutes||0);},0),q=a.reduce(function(s,z){return s+Number(z.questions||0);},0),dates=a.map(function(z){return z.date;}).sort();return {mins:mins,q:q,last:dates.length?dates[dates.length-1]:null};}
+  function pyqStats(x){var a=db.pyqAttempts.filter(function(z){return z.topicId===x.id;}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))||Number(a.createdAt||0)-Number(b.createdAt||0);});if(a.length)return {latest:Number(a[a.length-1].accuracy||0),best:Math.max.apply(null,a.map(function(z){return Number(z.accuracy||0);})),attempts:a.length};return {latest:x.acc==null?null:Number(x.acc),best:x.acc==null?null:Number(x.acc),attempts:0};}
+  function subjectStats(s){var arr=db.topics.filter(function(x){return x.s===s;}),done=arr.filter(function(x){return x.status==="Completed";}).length,learn=arr.filter(function(x){return x.status==="Learning";}).length,mins=0,q=0;arr.forEach(function(x){var z=studyStats(x.id);mins+=z.mins;q+=z.q;});return {total:arr.length,done:done,learn:learn,pct:arr.length?Math.round(done/arr.length*100):0,mins:mins,q:q};}
+  p.innerHTML="<div class='topline'><div><h1>Syllabus Tracker</h1><p class='muted page-sub'>Complete topics here. Study Log, PYQ and Revision now connect to each chapter.</p></div><div class='topmeta'><span class='badge'>✅ "+completed+" completed</span><span class='badge'>🟡 "+learning+" learning</span><span class='badge'>📚 "+total+" total topics</span></div></div>"+
+  "<div class='card section' style='background:linear-gradient(135deg,#162b4b,#0e1d34 60%,#142440);border-color:#3f5d8d'><div class='topline'><div><div class='kicker'>OVERALL SYLLABUS PROGRESS</div><div style='font-size:34px;font-weight:900;margin-top:5px'>"+overall+"%</div><div class='muted'>"+completed+" of "+total+" topics completed</div></div><div style='font-size:50px;font-weight:900'>📚</div></div><div class='bar' style='margin-top:14px;height:12px'><i style='width:"+overall+"%'></i></div><div class='row' style='border-bottom:0;margin-top:8px'><span class='muted'>🟢 Completed topics drive mock unlock</span><span class='"+(overall>=50?"good":"warn")+"'>"+(overall>=50?"🎯 Full mocks unlocked":"🔒 "+(50-overall)+"% to mock unlock")+"</span></div></div>"+
+  "<div class='grid cards section'>"+subjects.map(function(s){var st=subjectStats(s);return "<div class='card subject-card' data-subject='"+esc(s)+"' style='cursor:pointer'><div class='row' style='border-bottom:0'><div><div class='kicker'>"+s.toUpperCase()+"</div><div style='font-size:25px;font-weight:900;margin-top:3px'>"+st.pct+"%</div></div><span class='badge'>"+st.done+"/"+st.total+"</span></div><div class='bar' style='margin:12px 0 8px'><i style='width:"+st.pct+"%'></i></div><div class='muted' style='font-size:12px'>"+st.learn+" learning • "+(st.total-st.done-st.learn)+" not started • "+Math.round(st.mins/60*10)/10+"h studied</div></div>";}).join("")+"</div>"+
+  "<div class='card section'><div class='topline'><div><div class='kicker'>TOPIC TRACKER</div><h2 style='margin:4px 0 0'>Choose a subject</h2></div><div style='min-width:230px'><select id='syllabusSubject'>"+subjects.map(function(s){return "<option>"+s+"</option>";}).join("")+"</select></div></div><div id='topicPanel' style='margin-top:14px'></div></div>"+
+  "<div class='notice section'>💡 <b>Connected data:</b> status controls revision scheduling and mock unlock; Study Log contributes hours/questions; PYQ contributes accuracy.</div>";
   var select=document.getElementById("syllabusSubject"),panel=document.getElementById("topicPanel");
-  function renderTopics(){
-    var s=select.value,arr=db.topics.filter(function(x){return x.s===s;});
-    var st=subjectStats(s);
-    panel.innerHTML="<div class='row' style='border-bottom:1px solid #243653'><div><h2 style='margin:0'>"+s+" Topics</h2><div class='muted'>"+st.done+" completed • "+st.learn+" learning • "+st.pct+"% complete</div></div><span class='badge'>"+st.pct+"%</span></div>"+
-      arr.map(function(x){
-        var i=db.topics.indexOf(x);
-        var revStatus=(x.weekly||x.monthly)?((x.weeklyDone&&x.monthlyDone)?"✅ Fully revised":(x.weeklyDone?"🔁 Weekly done":"")):"";
-        return "<div class='row topic-row' style='padding:13px 0;align-items:center'><div style='min-width:0;flex:1'><div style='font-weight:850'>"+esc(x.topic)+"</div><div class='muted' style='font-size:12px;margin-top:3px'>"+(x.status==="Completed"?"Completed on "+esc(x.studied||""):(x.status==="Learning"?"Currently learning":"Not started"))+(revStatus?" • "+revStatus:"")+"</div></div><div style='display:flex;gap:8px;align-items:center;min-width:230px;justify-content:flex-end'><select class='topic-status' data-i='"+i+"' style='max-width:150px'><option>Not started</option><option>Learning</option><option>Completed</option></select><span class='badge'>"+(x.acc==null?"No PYQ":x.acc+"% PYQ")+"</span></div></div>";
-      }).join("");
-    panel.querySelectorAll(".topic-status").forEach(function(sel){
-      var i=Number(sel.dataset.i);sel.value=db.topics[i].status;
-      sel.addEventListener("change",function(){
-        var x=db.topics[i],old=x.status,v=sel.value;
-        x.status=v;
-        if(v==="Completed"&&old!=="Completed"){
-          x.studied=today();x.weekly=nextSunday(x.studied);x.monthly=addDays(x.studied,30);x.weeklyDone=false;x.monthlyDone=false;
-        }
-        if(v!=="Completed"&&old==="Completed"){
-          x.studied=null;x.weekly=null;x.monthly=null;x.weeklyDone=false;x.monthlyDone=false;
-        }
-        save();render();
-      });
-    });
+  function renderTopics(){var s=select.value,arr=db.topics.filter(function(x){return x.s===s;}),st=subjectStats(s);
+    panel.innerHTML="<div class='row' style='border-bottom:1px solid #243653'><div><h2 style='margin:0'>"+s+" Topics</h2><div class='muted'>"+st.done+" completed • "+st.learn+" learning • "+st.pct+"% complete • "+Math.round(st.mins/60*10)/10+"h • "+st.q+" questions</div></div><span class='badge'>"+st.pct+"%</span></div>"+
+    arr.map(function(x){var i=db.topics.indexOf(x),stt=studyStats(x.id),py=pyqStats(x),rev=(x.weekly||x.monthly)?((x.weeklyDone&&x.monthlyDone)?"✅ Fully revised":(x.weeklyDone?"🔁 Weekly done":"📅 Revision scheduled")):"";return "<div class='row topic-row' style='padding:13px 0;align-items:flex-start'><div style='min-width:0;flex:1'><div style='font-weight:850'>"+esc(x.topic)+"</div><div class='muted' style='font-size:12px;margin-top:3px'>"+(x.status==="Completed"?"Completed on "+esc(x.studied||""):(x.status==="Learning"?"Currently learning":"Not started"))+(rev?" • "+rev:"")+"</div><div class='topic-mini'>⏱️ "+Math.round(stt.mins/60*10)/10+"h • 📝 "+stt.q+" questions"+(stt.last?" • Last "+esc(stt.last):"")+"</div></div><div style='display:flex;gap:8px;align-items:center;min-width:230px;justify-content:flex-end'><select class='topic-status' data-i='"+i+"' style='max-width:150px'><option>Not started</option><option>Learning</option><option>Completed</option></select><span class='badge'>"+(py.latest==null?"No PYQ":py.latest+"% PYQ")+"</span></div></div>";}).join("");
+    panel.querySelectorAll(".topic-status").forEach(function(sel){var i=Number(sel.dataset.i);sel.value=db.topics[i].status;sel.addEventListener("change",function(){var x=db.topics[i],old=x.status,v=sel.value;x.status=v;if(v==="Completed"&&old!=="Completed"){x.studied=today();x.weekly=nextSunday(x.studied);x.monthly=addDays(x.studied,30);x.weeklyDone=false;x.monthlyDone=false;}if(v!=="Completed"&&old==="Completed"){x.studied=null;x.weekly=null;x.monthly=null;x.weeklyDone=false;x.monthlyDone=false;}save();render();});});
   }
-  select.addEventListener("change",renderTopics);
-  p.querySelectorAll(".subject-card").forEach(function(card){card.addEventListener("click",function(){select.value=card.dataset.subject;renderTopics();window.scrollTo({top:document.getElementById("topicPanel").offsetTop-120,behavior:"smooth"});});});
-  renderTopics();
+  select.addEventListener("change",renderTopics);p.querySelectorAll(".subject-card").forEach(function(card){card.addEventListener("click",function(){select.value=card.dataset.subject;renderTopics();window.scrollTo({top:document.getElementById("topicPanel").offsetTop-120,behavior:"smooth"});});});renderTopics();
 }
 function study(p){
-  var totalQ=db.study.reduce(function(s,x){return s+Number(x.questions||0);},0);
-  var totalM=db.study.reduce(function(s,x){return s+Number(x.minutes||0);},0);
-  p.innerHTML="<div class='topline'><div><h1>Study Log</h1><p class='muted page-sub'>Record what you actually studied — choose the date, subject and matching topic.</p></div>"+
-  "<div class='topmeta'><span class='badge'>📝 "+totalQ+" questions solved</span><span class='badge'>⏱️ "+Math.round(totalM/60*10)/10+"h studied</span></div></div>"+
-  "<div class='card section'><form id='studyForm'>"+
-  "<div class='grid two'><label class='muted'>Study date<input id='studyDate' name='date' type='date' value='"+today()+"' required><span style='display:block;margin-top:5px;font-size:12px'>You can select an earlier date if you forgot to log a previous study session.</span></label>"+
-  "<label class='muted'>Subject<select id='studySubject' name='subject'>"+Object.keys(S).map(function(s){return "<option>"+s+"</option>";}).join("")+"</select></label></div>"+
-  "<label class='muted'>Topic<select id='studyTopic' name='topic'><option value=''>Select a topic</option></select></label>"+
-  "<div class='grid two'><label class='muted'>Study minutes<input name='minutes' type='number' min='1' placeholder='e.g. 120' required></label><label class='muted'>Questions solved<input name='questions' type='number' min='0' placeholder='e.g. 50'></label></div>"+
-  "<button class='btn' type='submit'>+ Add Study</button></form></div>"+
-  "<div class='card section'><div class='row' style='border-bottom:0'><h2>📚 Study History</h2><span class='badge'>Date can be backdated</span></div>"+
-  (db.study.length?"<table><tr><th>Date</th><th>Subject</th><th>Topic</th><th>Minutes</th><th>Questions</th></tr>"+
-  db.study.slice().reverse().map(function(x){return "<tr><td>"+esc(x.date)+"</td><td>"+esc(x.subject)+"</td><td>"+esc(x.topic||"—")+"</td><td>"+Number(x.minutes||0)+"</td><td><b>"+Number(x.questions||0)+"</b></td></tr>";}).join("")+
-  "</table>":"<div class='empty'>No study sessions logged yet.</div>")+"</div>";
-
-  var subject=document.getElementById("studySubject"),topic=document.getElementById("studyTopic"),form=document.getElementById("studyForm");
-  function refreshStudyTopics(){
-    topic.innerHTML="<option value=''>Select a topic</option>"+(S[subject.value]||[]).map(function(t){return "<option value='"+esc(t)+"'>"+esc(t)+"</option>";}).join("");
-  }
-  subject.addEventListener("change",refreshStudyTopics);
-  refreshStudyTopics();
-
-  form.addEventListener("submit",function(e){
-    e.preventDefault();
-    var f=new FormData(e.target);
-    if(!f.get("topic")){alert("Please select the topic you studied.");return;}
-    db.study.push({
-      date:f.get("date"),
-      subject:f.get("subject"),
-      minutes:Number(f.get("minutes")||0),
-      questions:Number(f.get("questions")||0),
-      topic:f.get("topic")
-    });
-    save();render();
-  });
-}function revisionStats(){
+  var editingId=null,target=Number(db.settings.hours||8),day=today();
+  function sum(rows,key){return rows.reduce(function(a,x){return a+Number(x[key]||0);},0);}
+  function typeOptions(current){return ["Learning","Practice","PYQ","Revision","Recap"].map(function(t){return "<option value='"+t+"' "+(t===current?"selected":"")+">"+t+"</option>";}).join("");}
+  function subjectOptions(current){var out=Object.keys(S).map(function(s){return "<option value='"+esc(s)+"' "+(s===current?"selected":"")+">"+s+"</option>";}).join("");if(current==="Overall")out="<option value='Overall' selected>Overall / Recap</option>"+out;return out;}
+  function topicOptionsFor(subject,selected){if(subject==="Overall")return "<option value='Daily Recap' "+(selected==="Daily Recap"?"selected":"")+">Daily Recap</option>";return "<option value=''>Select a topic</option>"+(S[subject]||[]).map(function(t){return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";}).join("");}
+  function planned(){var plan=db.plans&&db.plans[day];if(!Array.isArray(plan))return "<div class='empty'>No plan for today yet. Open Planner to create it.</div>";return "<div class='study-plan-list'>"+plan.filter(function(x){return x.subject||x.type==="Recap";}).map(function(x){var label=x.type==="Recap"?"Daily Recap":x.subject+" • "+(x.topic||"Select topic");return "<div class='study-plan-row'><div><div class='study-plan-topic'>"+esc(label)+"</div><div class='muted' style='font-size:11px'>"+x.start+" – "+x.end+" • "+x.minutes+" min</div></div><span class='badge'>"+(x.done?"✅ Linked":"○ Planned")+"</span></div>";}).join("")+"</div>";}
+  function history(){var fs=document.getElementById("studyFilterSubject"),ft=document.getElementById("studyFilterType"),fd=document.getElementById("studyFilterDate");var rows=db.study.slice().reverse().filter(function(x){return (!fs.value||x.subject===fs.value)&&(!ft.value||(x.sessionType||x.type||"Learning")===ft.value)&&(!fd.value||x.date===fd.value);});var box=document.getElementById("studyHistory");box.innerHTML=rows.length?"<div class='study-history'><table><tr><th>Date</th><th>Subject</th><th>Topic</th><th>Type</th><th>Source</th><th>Minutes</th><th>Questions</th><th></th></tr>"+rows.map(function(x){var typ=x.sessionType||x.type||"Learning",src=x.source||"Manual";return "<tr><td>"+esc(x.date)+"</td><td>"+esc(x.subject)+"</td><td>"+esc(x.topic||"—")+"</td><td><span class='session-pill'>"+esc(typ)+"</span></td><td><span class='session-pill'>"+esc(src)+"</span></td><td>"+Number(x.minutes||0)+"</td><td><b>"+Number(x.questions||0)+"</b></td><td><div class='study-actions'><button class='btn alt study-edit' data-id='"+esc(x.id)+"' type='button'>Edit</button><button class='btn alt danger-btn study-delete' data-id='"+esc(x.id)+"' type='button'>Delete</button></div></td></tr>";}).join("")+"</table></div>":"<div class='empty'>No study sessions match the filters.</div>";box.querySelectorAll(".study-edit").forEach(function(b){b.addEventListener("click",function(){beginEdit(b.dataset.id);});});box.querySelectorAll(".study-delete").forEach(function(b){b.addEventListener("click",function(){deleteSession(b.dataset.id);});});}
+  function refreshTopics(selected){var subj=document.getElementById("studySubject"),topic=document.getElementById("studyTopic");topic.innerHTML=topicOptionsFor(subj.value,selected||"");}
+  function resetForm(){editingId=null;var f=document.getElementById("studyForm");f.reset();f.date.value=today();f.subject.innerHTML=subjectOptions("Quant");f.subject.value="Quant";refreshTopics("");f.type.value="Learning";f.minutes.value="";f.questions.value="0";f.date.disabled=false;f.subject.disabled=false;document.getElementById("studyFormTitle").textContent="➕ Log a Study Session";document.getElementById("studySaveBtn").textContent="+ Add Study";document.getElementById("studyCancelBtn").style.display="none";document.getElementById("studySourceNote").innerHTML="Manual session — backdate it when necessary.";}
+  function beginEdit(id){var x=db.study.find(function(z){return z.id===id;});if(!x)return;editingId=id;var f=document.getElementById("studyForm");f.subject.innerHTML=subjectOptions(x.subject);f.subject.value=x.subject;f.date.value=x.date;refreshTopics(x.topic);f.type.value=x.sessionType||x.type||"Learning";f.minutes.value=Number(x.minutes||0);f.questions.value=Number(x.questions||0);f.date.disabled=x.source==="Planner";f.subject.disabled=x.source==="Planner";document.getElementById("studyFormTitle").textContent="✏️ Edit Study Session";document.getElementById("studySaveBtn").textContent="Save Changes";document.getElementById("studyCancelBtn").style.display="inline-flex";document.getElementById("studySourceNote").innerHTML=x.source==="Planner"?"🔗 Planner-linked session. Date and subject stay tied to the plan; topic, type, time and questions can be corrected.":"Manual session — all fields are editable.";window.scrollTo({top:0,behavior:"smooth"});}
+  function deleteSession(id){var x=db.study.find(function(z){return z.id===id;});if(!x||!confirm("Delete this study session?"))return;if(x.source==="Planner"&&x.sourceId){var parts=String(x.sourceId).split("|"),d=parts[0],blockId=parts[1];if(db.plans&&db.plans[d]){var t=db.plans[d].find(function(z){return z.id===blockId;});if(t){t.done=false;t.logged=false;t.logId=null;}}}db.study=db.study.filter(function(z){return z.id!==id;});save();study(p);}
+  var allM=sum(db.study,"minutes"),allQ=sum(db.study,"questions"),todayRows=db.study.filter(function(x){return x.date===day;}),todayM=sum(todayRows,"minutes"),todayQ=sum(todayRows,"questions"),pctToday=Math.min(100,Math.round(todayM/(target*60)*100));
+  p.innerHTML="<div class='topline'><div><h1>Study Log 2.0</h1><p class='muted page-sub'>The Study Log is the source of truth for actual work. Planner completions land here automatically.</p></div><div class='topmeta'><span class='badge'>📝 "+allQ+" questions</span><span class='badge'>⏱️ "+Math.round(allM/60*10)/10+"h total</span></div></div>"+
+  "<div class='card section study-hero'><div class='row' style='border-bottom:0;align-items:flex-start'><div><div class='kicker'>📅 TODAY'S REAL PROGRESS</div><div style='font-size:26px;font-weight:900;margin-top:6px'>"+Math.round(todayM/60*10)/10+"h / "+target+"h</div><div class='muted' style='margin-top:4px'>"+todayQ+" questions • "+todayRows.length+" sessions</div></div><div style='text-align:right'><div style='font-size:36px;font-weight:900'>"+pctToday+"%</div><div class='metric-note'>daily target</div></div></div><div class='bar' style='margin-top:14px;height:11px'><i style='width:"+pctToday+"%'></i></div><div class='study-summary' style='margin-top:15px'><div><div class='kicker'>LEARNING</div><div class='big'>"+Math.round(sum(todayRows.filter(function(x){return (x.sessionType||x.type)==="Learning";}),"minutes")/60*10)/10+"h</div></div><div><div class='kicker'>PRACTICE</div><div class='big'>"+Math.round(sum(todayRows.filter(function(x){return (x.sessionType||x.type)==="Practice";}),"minutes")/60*10)/10+"h</div></div><div><div class='kicker'>REVISION</div><div class='big'>"+Math.round(sum(todayRows.filter(function(x){return (x.sessionType||x.type)==="Revision";}),"minutes")/60*10)/10+"h</div></div><div><div class='kicker'>QUESTIONS</div><div class='big'>"+todayQ+"</div></div></div></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker' id='studyFormTitle'>➕ Log a Study Session</div><h2 style='margin:4px 0 0'>Record the work you actually completed</h2></div><span class='badge'>Date can be backdated</span></div><form id='studyForm'><div class='grid three'><label class='muted'>Date<input id='studyDate' name='date' type='date' value='"+day+"' required></label><label class='muted'>Subject<select id='studySubject' name='subject'>"+subjectOptions("Quant")+"</select></label><label class='muted'>Type<select id='studyType' name='type'>"+typeOptions("Learning")+"</select></label></div><label class='muted'>Topic<select id='studyTopic' name='topic'></select></label><div class='grid two'><label class='muted'>Study minutes<input name='minutes' type='number' min='1' placeholder='e.g. 120' required></label><label class='muted'>Questions solved<input name='questions' type='number' min='0' value='0' placeholder='e.g. 50'></label></div><div id='studySourceNote' class='notice'>Manual session — backdate it when necessary.</div><div class='study-form-actions'><button id='studySaveBtn' class='btn' type='submit'>+ Add Study</button><button id='studyCancelBtn' class='btn alt' type='button' style='display:none'>Cancel Edit</button></div></form></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>🔗 TODAY'S PLAN → STUDY LOG</div><h2 style='margin:4px 0 0'>Planner connection</h2></div><span class='badge'>"+todayRows.filter(function(x){return x.source==="Planner";}).length+" linked</span></div>"+planned()+"</div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>📚 HISTORY</div><h2 style='margin:4px 0 0'>Every recorded session</h2></div><span class='badge'>Edit or delete entries</span></div><div class='study-filter' style='margin-bottom:12px'><select id='studyFilterSubject'><option value=''>All subjects</option>"+Object.keys(S).map(function(s){return "<option>"+s+"</option>";}).join("")+"<option value='Overall'>Overall / Recap</option></select><select id='studyFilterType'><option value=''>All session types</option>"+["Learning","Practice","PYQ","Revision","Recap"].map(function(t){return "<option>"+t+"</option>";}).join("")+"</select><input id='studyFilterDate' type='date' value=''></div><div id='studyHistory'></div></div>";
+  var form=document.getElementById("studyForm"),subject=document.getElementById("studySubject");
+  refreshTopics("");history();subject.addEventListener("change",function(){refreshTopics("");});["studyFilterSubject","studyFilterType","studyFilterDate"].forEach(function(id){document.getElementById(id).addEventListener("change",history);});document.getElementById("studyCancelBtn").addEventListener("click",resetForm);
+  form.addEventListener("submit",function(e){e.preventDefault();var f=new FormData(form),subj=f.get("subject"),topic=f.get("topic"),minutes=Number(f.get("minutes")||0),questions=Number(f.get("questions")||0),type=f.get("type")||"Learning",date=f.get("date")||today();if(subj!=="Overall"&&!topic){alert("Please select the topic you studied.");return;}if(minutes<1||questions<0){alert("Please enter valid minutes and questions.");return;}if(editingId){var x=db.study.find(function(z){return z.id===editingId;});if(!x)return;x.minutes=minutes;x.questions=questions;x.sessionType=type;x.type=type;if(x.source!=="Planner"){x.date=date;x.subject=subj;x.topic=topic;}else{x.topic=topic||x.topic;}}else{if(subj==="Overall"){alert("Overall / Recap entries are created automatically by Planner.");return;}db.study.push({id:uid("study"),date:date,subject:subj,topic:topic,minutes:minutes,questions:questions,type:type,sessionType:type,source:"Manual"});}save();render();});
+  resetForm();
+}
+function revisionStats(){
   db.revisionHistory=db.revisionHistory||[];
   var t=today(),weekStart=new Date(t+"T12:00:00");
   weekStart.setDate(weekStart.getDate()-weekStart.getDay());
@@ -644,6 +621,6 @@ function backup(p){
   document.getElementById("export").onclick=exportDB;document.getElementById("restore").onclick=importDB;document.getElementById("saveHours").onclick=function(){db.settings.hours=Number(document.getElementById("hours").value)||8;save();render();};
 }
 function exportDB(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="ssc-cgl-2027-backup-"+today()+".json";a.click();}
-function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{db=JSON.parse(r.result);save();render();alert("Backup restored.");}catch(e){alert("Invalid backup file.");}};r.readAsText(f);}
+function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{var incoming=JSON.parse(r.result);if(!incoming||!Array.isArray(incoming.topics)||!Array.isArray(incoming.study))throw new Error("invalid");db=incoming;normalizeDb();save();render();alert("Backup restored.");}catch(e){alert("Invalid backup file.");}};r.readAsText(f);}
 render();
 </script></body></html>
