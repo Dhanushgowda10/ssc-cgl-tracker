@@ -42,7 +42,9 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 .empty{padding:20px;border:1px dashed #304867;border-radius:10px;color:var(--muted);text-align:center}
 @media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:850px){.app{display:block}aside{width:auto;height:auto;position:relative;padding:13px}.brand{padding:6px 8px 12px}nav{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}.cards,.two{grid-template-columns:1fr}.calendar{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto;padding-bottom:5px}.weekdays{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto}.weekday{white-space:nowrap}.cal{min-height:95px}main{padding:17px}.topline{flex-direction:column}.topmeta{justify-content:flex-start}.heat{grid-template-columns:repeat(14,1fr)}}
-.streak-wrap{display:flex;gap:9px;margin-top:14px;overflow-x:auto;padding-bottom:3px}.streak-labels{width:29px;display:grid;grid-template-rows:repeat(7,1fr);gap:5px;flex:0 0 29px;color:#7f92b5;font-size:10px;font-weight:800;align-items:center;text-align:center}.streak-columns{display:grid;grid-template-columns:repeat(12,20px);gap:6px;min-width:max-content}.streak-week{display:grid;grid-template-rows:repeat(7,20px);gap:5px}.streak-day{width:20px;height:20px;border-radius:4px;background:#17243a;border:1px solid #203451;transition:transform .15s,border-color .15s}.streak-day:hover{transform:scale(1.12);border-color:#6f8fd8}.streak-day.l1{background:#38527c}.streak-day.l2{background:#5573a9}.streak-day.l3{background:#7694d9}.streak-day.l4{background:#a7bfff}.streak-legend{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:9px;color:#7f92b5;font-size:11px}.streak-s{display:inline-block;width:12px;height:12px;border-radius:3px;background:#17243a;border:1px solid #203451}.streak-s.l1{background:#38527c}.streak-s.l2{background:#5573a9}.streak-s.l3{background:#7694d9}.streak-s.l4{background:#a7bfff}.subject-card{transition:.18s}.subject-card:hover{transform:translateY(-2px);border-color:#486690}.topic-row:hover{background:#122139}@media(max-width:850px){.subject-card{cursor:default}.topic-row{align-items:flex-start!important;flex-direction:column;gap:10px}.topic-row>div:last-child{min-width:0!important;width:100%;justify-content:flex-start!important}}</style></head>
+.streak-wrap{display:flex;gap:9px;margin-top:14px;overflow-x:auto;padding-bottom:3px}.streak-labels{width:29px;display:grid;grid-template-rows:repeat(7,1fr);gap:5px;flex:0 0 29px;color:#7f92b5;font-size:10px;font-weight:800;align-items:center;text-align:center}.streak-columns{display:grid;grid-template-columns:repeat(12,20px);gap:6px;min-width:max-content}.streak-week{display:grid;grid-template-rows:repeat(7,20px);gap:5px}.streak-day{width:20px;height:20px;border-radius:4px;background:#17243a;border:1px solid #203451;transition:transform .15s,border-color .15s}.streak-day:hover{transform:scale(1.12);border-color:#6f8fd8}.streak-day.l1{background:#38527c}.streak-day.l2{background:#5573a9}.streak-day.l3{background:#7694d9}.streak-day.l4{background:#a7bfff}.streak-legend{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:9px;color:#7f92b5;font-size:11px}.streak-s{display:inline-block;width:12px;height:12px;border-radius:3px;background:#17243a;border:1px solid #203451}.streak-s.l1{background:#38527c}.streak-s.l2{background:#5573a9}.streak-s.l3{background:#7694d9}.streak-s.l4{background:#a7bfff}.subject-card{transition:.18s}.subject-card:hover{transform:translateY(-2px);border-color:#486690}.topic-row:hover{background:#122139}@media(max-width:850px){.subject-card{cursor:default}.topic-row{align-items:flex-start!important;flex-direction:column;gap:10px}.topic-row>div:last-child{min-width:0!important;width:100%;justify-content:flex-start!important}}
+.pyq-progress{display:flex;align-items:center;gap:12px;margin-top:10px}.pyq-progress-track{flex:1;height:8px;background:#1d2d49;border-radius:99px;overflow:hidden}.pyq-progress-track i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px}.pyq-mini{font-size:12px;color:var(--muted)}.pyq-focus{border-color:#486a9e!important;background:linear-gradient(145deg,#142a4a,#101d33 70%)!important}.pyq-trend{display:flex;align-items:end;gap:8px;height:150px;padding:14px 4px 4px}.pyq-barwrap{flex:1;min-width:32px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:5px}.pyq-bar{width:100%;max-width:42px;min-height:5px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:7px 7px 3px 3px}.pyq-barlabel{font-size:10px;color:var(--muted);white-space:nowrap}.pyq-barvalue{font-size:11px;font-weight:800}.pyq-history td,.pyq-history th{white-space:nowrap}.pyq-actions{display:flex;gap:6px;justify-content:flex-end}.danger-btn{background:#351c27!important;border-color:#693344!important;color:#ffb4c1!important}.pyq-empty{padding:18px;border:1px dashed #304867;border-radius:10px;color:var(--muted);text-align:center}@media(max-width:850px){.pyq-trend{overflow-x:auto}.pyq-barwrap{min-width:48px}.pyq-history{overflow-x:auto}.pyq-history table{min-width:720px}}
+</style></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
 const S = {
@@ -401,71 +403,186 @@ function calendarHtml(){
   out+="</div><div class='calendar-legend'><span class='legend-item'><i class='legend-dot today'></i>Today</span><span class='legend-item'><i class='legend-dot'></i>Weekly</span><span class='legend-item'><i class='legend-dot monthly'></i>Monthly</span><span class='legend-item'><i class='legend-dot overdue'></i>Overdue</span></div></div>";
   return out;
 }
+
 function pyq(p){
+  db.pyqAttempts=db.pyqAttempts||[];
   var selectedSubject=(db.pyqSubject&&S[db.pyqSubject])?db.pyqSubject:"Quant";
-  var rows=db.topics.filter(function(x){return x.totalQuestions!=null;}).sort(function(a,b){return (a.s+a.topic).localeCompare(b.s+b.topic);});
-  var totalAll=rows.reduce(function(s,x){return s+Number(x.totalQuestions||0);},0);
-  var rightAll=rows.reduce(function(s,x){return s+Number(x.right||0);},0);
-  var wrongAll=rows.reduce(function(s,x){return s+Number(x.wrong||0);},0);
-  var attemptedAll=rightAll+wrongAll;
-  var unattemptedAll=Math.max(0,totalAll-attemptedAll);
-  var accuracyAll=attemptedAll?Math.round(rightAll/attemptedAll*1000)/10:0;
 
-  p.innerHTML="<div class='topline'><div><h1>PYQ Tracker</h1><p class='muted page-sub'>Enter total, right and wrong. Unattempted is calculated automatically, and accuracy is based on attempted questions.</p></div>"+
-  "<div class='topmeta'><span class='badge'>📚 "+totalAll+" total</span><span class='badge'>📝 "+attemptedAll+" attempted</span><span class='badge'>⬜ "+unattemptedAll+" unattempted</span><span class='badge'>📊 "+accuracyAll+"% accuracy</span></div></div>"+
-  "<div class='card section'><form id='pyqForm'><div class='grid two'>"+
-  "<label class='muted'>Subject<select id='pyqSubject' name='subject'>"+Object.keys(S).map(function(s){return "<option value='"+esc(s)+"' "+(s===selectedSubject?"selected":"")+">"+s+"</option>";}).join("")+"</select></label>"+
-  "<label class='muted'>Topic<select id='pyqTopic' name='topic'></select></label></div>"+
-  "<div class='grid three'>"+
-  "<label class='muted'>Total Questions<input name='total' type='number' min='1' placeholder='e.g. 50' required></label>"+
-  "<label class='muted'>Right<input name='right' type='number' min='0' placeholder='e.g. 44' required></label>"+
-  "<label class='muted'>Wrong<input name='wrong' type='number' min='0' placeholder='e.g. 2' required></label></div>"+
-  "<div class='grid three'>"+
-  "<div class='notice' id='attemptedPreview'>Attempted: —</div>"+
-  "<div class='notice' id='unattemptedPreview'>Unattempted: —</div>"+
-  "<div class='notice' id='accPreview'>Accuracy: —</div></div>"+
-  "<button class='btn' type='submit'>Save PYQ Result</button></form></div>"+
-  "<div class='card section'><div class='row' style='border-bottom:0'><h2>📚 Topic-wise PYQ Performance</h2><span class='badge'>"+rows.length+" tracked topics</span></div>"+
-  (rows.length?"<table><tr><th>Subject</th><th>Topic</th><th>Total</th><th>Attempted</th><th>Right</th><th>Wrong</th><th>Unattempted</th><th>Accuracy</th></tr>"+
-  rows.map(function(x){
-    var total=Number(x.totalQuestions||0),right=Number(x.right||0),wrong=Number(x.wrong||0),attempted=right+wrong,unattempted=Math.max(0,total-attempted),a=attempted?Math.round(right/attempted*1000)/10:0;
-    return "<tr><td>"+esc(x.s)+"</td><td>"+esc(x.topic)+"</td><td>"+total+"</td><td>"+attempted+"</td><td class='good'>"+right+"</td><td class='bad'>"+wrong+"</td><td>"+unattempted+"</td><td class='"+(a<70?"bad":a<85?"warn":"good")+"'>"+a+"%</td></tr>";
-  }).join("")+"</table>":"<div class='empty'>No PYQ results saved yet.</div>")+"</div>";
+  function attemptsFor(topicId){
+    return db.pyqAttempts.filter(function(a){return a.topicId===topicId;}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))||Number(a.createdAt||0)-Number(b.createdAt||0);});
+  }
+  function latestFor(x){
+    var a=attemptsFor(x.id);
+    if(a.length)return a[a.length-1];
+    if(x.totalQuestions!=null)return {
+      legacy:true,date:"Legacy",total:Number(x.totalQuestions||0),right:Number(x.right||0),wrong:Number(x.wrong||0),
+      unattempted:Math.max(0,Number(x.totalQuestions||0)-Number(x.right||0)-Number(x.wrong||0)),
+      accuracy:x.acc==null?0:Number(x.acc)
+    };
+    return null;
+  }
+  function statsForTopic(x){
+    var a=attemptsFor(x.id),best=0;
+    a.forEach(function(z){if(Number(z.accuracy)>best)best=Number(z.accuracy);});
+    var latest=latestFor(x);
+    if(latest&&!a.length)best=Number(latest.accuracy||0);
+    return {attempts:a.length,latest:latest,best:best};
+  }
+  function trackedRows(){
+    return db.topics.filter(function(x){return x.totalQuestions!=null||attemptsFor(x.id).length>0;});
+  }
+  function overallStats(){
+    var attempts=db.pyqAttempts.slice();
+    var total=attempts.reduce(function(s,x){return s+Number(x.total||0);},0);
+    var right=attempts.reduce(function(s,x){return s+Number(x.right||0);},0);
+    var wrong=attempts.reduce(function(s,x){return s+Number(x.wrong||0);},0);
+    var legacy=db.topics.filter(function(x){return x.totalQuestions!=null&&attemptsFor(x.id).length===0;});
+    legacy.forEach(function(x){total+=Number(x.totalQuestions||0);right+=Number(x.right||0);wrong+=Number(x.wrong||0);});
+    var attempted=right+wrong,unattempted=Math.max(0,total-attempted),accuracy=attempted?Math.round(right/attempted*1000)/10:0;
+    return {total:total,right:right,wrong:wrong,attempted:attempted,unattempted:unattempted,accuracy:accuracy};
+  }
 
-  var subj=document.getElementById("pyqSubject"),topic=document.getElementById("pyqTopic"),form=document.getElementById("pyqForm"),accPreview=document.getElementById("accPreview"),attemptedPreview=document.getElementById("attemptedPreview"),unattemptedPreview=document.getElementById("unattemptedPreview");
-  function refreshTopics(){
-    var s=subj.value;
-    topic.innerHTML=(S[s]||[]).map(function(t){return "<option value='"+esc(t)+"'>"+esc(t)+"</option>";}).join("");
-    var current=db.topics.find(function(x){return x.s===s&&x.topic===topic.value;});
-    if(current&&current.totalQuestions!=null){
-      form.total.value=current.totalQuestions;form.right.value=current.right||0;form.wrong.value=current.wrong||0;
+  var all=overallStats(),tracked=trackedRows().sort(function(a,b){return (a.s+a.topic).localeCompare(b.s+b.topic);});
+  var selectedTopic=(db.pyqTopic&&db.pyqTopic.subject===selectedSubject&&S[selectedSubject].includes(db.pyqTopic.topic))
+    ? db.pyqTopic.topic : S[selectedSubject][0];
+  var selected=db.topics.find(function(x){return x.s===selectedSubject&&x.topic===selectedTopic;})||db.topics.find(function(x){return x.s===selectedSubject;});
+  selectedTopic=selected?selected.topic:selectedTopic;
+  var selectedAttempts=selected?attemptsFor(selected.id):[];
+  var selectedStats=selected?statsForTopic(selected):{attempts:0,latest:null,best:0};
+
+  function topicProgressHtml(){
+    if(!selected)return "<div class='pyq-empty'>Select a topic to see its progression.</div>";
+    var a=selectedAttempts;
+    if(!a.length){
+      if(selectedStats.latest&&selectedStats.latest.legacy){
+        return "<div class='notice'><b>Previous result:</b> "+selectedStats.latest.right+" right / "+selectedStats.latest.wrong+" wrong / "+selectedStats.latest.unattempted+" unattempted • <b>"+selectedStats.latest.accuracy+"%</b> accuracy. Save another attempt below to start a progression history.</div>";
+      }
+      return "<div class='pyq-empty'>No attempts yet for this topic. Save your first result below.</div>";
+    }
+    var max=Math.max.apply(null,a.map(function(z){return Number(z.accuracy||0);}).concat([1]));
+    var bars=a.map(function(z,i){
+      var h=Math.max(5,Math.round(Number(z.accuracy||0)/max*95));
+      return "<div class='pyq-barwrap'><div class='pyq-barvalue'>"+Number(z.accuracy||0)+"%</div><div class='pyq-bar' style='height:"+h+"%'></div><div class='pyq-barlabel'>#"+(i+1)+"</div></div>";
+    }).join("");
+    var first=Number(a[0].accuracy||0),last=Number(a[a.length-1].accuracy||0),delta=Math.round((last-first)*10)/10;
+    var direction=delta>0?"good":delta<0?"bad":"muted";
+    return "<div class='grid cards'><div><div class='kicker'>ATTEMPTS</div><div class='big'>"+a.length+"</div></div><div><div class='kicker'>BEST ACCURACY</div><div class='big'>"+selectedStats.best+"%</div></div><div><div class='kicker'>LATEST</div><div class='big'>"+last+"%</div></div><div><div class='kicker'>PROGRESS</div><div class='big "+direction+"'>"+(delta>0?"+":"")+delta+"%</div></div></div>"+
+      "<div class='pyq-trend'>"+bars+"</div>"+
+      "<div class='pyq-progress'><div class='pyq-progress-track'><i style='width:"+Math.min(100,last)+"%'></i></div><div class='pyq-mini'>Latest accuracy</div></div>";
+  }
+
+  function topicHistoryHtml(){
+    if(!selected)return "";
+    var a=selectedAttempts.slice().reverse();
+    if(!a.length)return "<div class='pyq-empty'>No saved attempt history for this topic yet.</div>";
+    return "<div class='pyq-history' style='overflow:auto'><table style='min-width:720px'><tr><th>Date</th><th>Total</th><th>Attempted</th><th>Right</th><th>Wrong</th><th>Unattempted</th><th>Accuracy</th><th></th></tr>"+
+      a.map(function(z){
+        return "<tr><td>"+esc(z.date)+"</td><td>"+Number(z.total)+"</td><td>"+Number(z.right)+Number(z.wrong)+"</td><td class='good'>"+Number(z.right)+"</td><td class='bad'>"+Number(z.wrong)+"</td><td>"+Number(z.unattempted)+"</td><td class='"+(Number(z.accuracy)<70?"bad":Number(z.accuracy)<85?"warn":"good")+"'><b>"+Number(z.accuracy)+"%</b></td><td class='pyq-actions'><button class='btn alt danger-btn pyq-delete' data-id='"+esc(z.id)+"' type='button'>Delete</button></td></tr>";
+      }).join("")+"</table></div>";
+  }
+
+  var topicOptionsHtml=(S[selectedSubject]||[]).map(function(t){return "<option value='"+esc(t)+"' "+(t===selectedTopic?"selected":"")+">"+esc(t)+"</option>";}).join("");
+
+  p.innerHTML=
+    "<div class='topline'><div><h1>PYQ Tracker 2.0</h1><p class='muted page-sub'>Track every attempt, see accuracy progression, and keep your weak topics visible. Accuracy is always calculated from attempted questions.</p></div>"+
+    "<div class='topmeta'><span class='badge'>📚 "+all.total+" total</span><span class='badge'>📝 "+all.attempted+" attempted</span><span class='badge'>⬜ "+all.unattempted+" unattempted</span><span class='badge'>📊 "+all.accuracy+"% overall</span></div></div>"+
+
+    "<div class='card section pyq-focus'><div class='row' style='border-bottom:0;align-items:flex-start'><div><div class='kicker'>📈 PERFORMANCE TIMELINE</div><h2 style='margin:4px 0 0'>"+esc(selectedSubject)+" • "+esc(selectedTopic)+"</h2><div class='muted' style='margin-top:4px'>"+selectedStats.attempts+" saved attempt"+(selectedStats.attempts===1?"":"s")+" • best "+selectedStats.best+"%</div></div><span class='badge'>"+(selectedStats.latest?("Latest "+selectedStats.latest.accuracy+"%"):"Not attempted yet")+"</span></div>"+topicProgressHtml()+"</div>"+
+
+    "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>➕ LOG A NEW ATTEMPT</div><h2 style='margin:4px 0 0'>Total → Right + Wrong → automatic accuracy</h2></div><span class='badge'>No manual accuracy entry</span></div>"+
+      "<form id='pyqForm'><div class='grid two'>"+
+        "<label class='muted'>Subject<select id='pyqSubject' name='subject'>"+Object.keys(S).map(function(s){return "<option value='"+esc(s)+"' "+(s===selectedSubject?"selected":"")+">"+s+"</option>";}).join("")+"</select></label>"+
+        "<label class='muted'>Topic<select id='pyqTopic' name='topic'>"+topicOptionsHtml+"</select></label></div>"+
+        "<div class='grid four'>"+
+          "<label class='muted'>Date<input name='date' type='date' value='"+today()+"' required></label>"+
+          "<label class='muted'>Total Questions<input name='total' type='number' min='1' placeholder='50' required></label>"+
+          "<label class='muted'>Right<input name='right' type='number' min='0' placeholder='44' required></label>"+
+          "<label class='muted'>Wrong<input name='wrong' type='number' min='0' placeholder='2' required></label>"+
+        "</div>"+
+        "<div class='grid three'><div class='notice' id='attemptedPreview'>Attempted: —</div><div class='notice' id='unattemptedPreview'>Unattempted: —</div><div class='notice' id='accPreview'>Accuracy: —</div></div>"+
+        "<button class='btn' type='submit'>Save Attempt</button></form></div>"+
+
+    "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>📚 TRACKED TOPICS</div><h2 style='margin:4px 0 0'>Latest performance by topic</h2></div><span class='badge'>"+tracked.length+" topics</span></div>"+
+      (tracked.length?"<table><tr><th>Subject</th><th>Topic</th><th>Attempts</th><th>Latest</th><th>Best</th><th>Trend</th></tr>"+
+        tracked.map(function(x){
+          var st=statsForTopic(x),latest=st.latest,prev=st.attempts>1?attemptsFor(x.id)[st.attempts-2]:null;
+          var trend=prev&&latest?(Number(latest.accuracy)-Number(prev.accuracy)):"—";
+          var trendTxt=trend==="—"?"—":((Number(trend)>0?"+":"")+Math.round(Number(trend)*10)/10+"%");
+          var trendClass=trend==="—"?"":Number(trend)>0?"good":Number(trend)<0?"bad":"muted";
+          return "<tr><td>"+esc(x.s)+"</td><td>"+esc(x.topic)+"</td><td>"+st.attempts+(st.latest&&st.latest.legacy?" <span class='pyq-mini'>(old)</span>":"")+"</td><td>"+(latest?Number(latest.accuracy)+"%":"—")+"</td><td>"+st.best+"%</td><td class='"+trendClass+"'>"+trendTxt+"</td></tr>";
+        }).join("")+"</table>":"<div class='pyq-empty'>No PYQ topics tracked yet.</div>")+"</div>"+
+
+    "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>🕘 ATTEMPT HISTORY</div><h2 style='margin:4px 0 0'>"+esc(selectedTopic)+"</h2></div><span class='badge'>"+selectedAttempts.length+" attempts</span></div>"+
+      topicHistoryHtml()+"</div>";
+
+  var subj=document.getElementById("pyqSubject"),topic=document.getElementById("pyqTopic"),form=document.getElementById("pyqForm");
+  var accPreview=document.getElementById("accPreview"),attemptedPreview=document.getElementById("attemptedPreview"),unattemptedPreview=document.getElementById("unattemptedPreview");
+
+  function loadSelectedValues(){
+    var s=subj.value,t=topic.value,x=db.topics.find(function(a){return a.s===s&&a.topic===t;});
+    var a=x?attemptsFor(x.id):[];
+    if(a.length){
+      var z=a[a.length-1];
+      form.total.value=z.total;form.right.value=z.right;form.wrong.value=z.wrong;
+    }else if(x&&x.totalQuestions!=null){
+      form.total.value=x.totalQuestions;form.right.value=x.right||0;form.wrong.value=x.wrong||0;
     }else{
       form.total.value="";form.right.value="";form.wrong.value="";
     }
     updatePreview();
   }
+  function refreshPageForTopic(){
+    db.pyqSubject=subj.value;db.pyqTopic={subject:subj.value,topic:topic.value};save();render();
+  }
   function updatePreview(){
     var total=Number(form.total.value||0),right=Number(form.right.value||0),wrong=Number(form.wrong.value||0),attempted=right+wrong,unattempted=Math.max(0,total-attempted),a=attempted?Math.round(right/attempted*1000)/10:0;
     attemptedPreview.innerHTML=total?"<b>Attempted:</b> "+attempted:"Attempted: —";
     unattemptedPreview.innerHTML=total?"<b>Unattempted:</b> "+unattempted:"Unattempted: —";
-    if(total&&attempted>total){
-      accPreview.innerHTML="<span class='bad'>⚠️ Right + Wrong cannot exceed Total.</span>";
-    }else{
-      accPreview.innerHTML=attempted?"<b>Accuracy:</b> "+a+"%":"Accuracy: —";
-    }
+    if(total&&attempted>total)accPreview.innerHTML="<span class='bad'>⚠️ Right + Wrong cannot exceed Total.</span>";
+    else accPreview.innerHTML=attempted?"<b>Accuracy:</b> "+a+"%":"Accuracy: —";
   }
-  subj.addEventListener("change",function(){db.pyqSubject=subj.value;save();refreshTopics();});
-  topic.addEventListener("change",refreshTopics);
+
+  subj.addEventListener("change",function(){
+    db.pyqSubject=subj.value;db.pyqTopic={subject:subj.value,topic:(S[subj.value]||[])[0]||""};save();render();
+  });
+  topic.addEventListener("change",refreshPageForTopic);
   ["total","right","wrong"].forEach(function(n){form[n].addEventListener("input",updatePreview);});
+
   form.addEventListener("submit",function(e){
     e.preventDefault();
-    var subject=subj.value,t=topic.value,total=Number(form.total.value||0),right=Number(form.right.value||0),wrong=Number(form.wrong.value||0),attempted=right+wrong;
-    if(!total||right<0||wrong<0||attempted>total){alert("Please make sure Right + Wrong is not greater than Total.");return;}
+    var f=new FormData(e.target),subject=subj.value,t=topic.value,date=f.get("date")||today(),total=Number(f.get("total")||0),right=Number(f.get("right")||0),wrong=Number(f.get("wrong")||0),attempted=right+wrong;
+    if(!total||right<0||wrong<0||attempted>total){
+      alert("Please make sure Total is at least 1 and Right + Wrong is not greater than Total.");
+      return;
+    }
     var x=db.topics.find(function(a){return a.s===subject&&a.topic===t;});
-    if(x){x.totalQuestions=total;x.right=right;x.wrong=wrong;x.acc=attempted?Math.round(right/attempted*1000)/10:0;}
-    db.pyqSubject=subject;save();render();
+    if(!x)return;
+    var unattempted=total-attempted,accuracy=attempted?Math.round(right/attempted*1000)/10:0;
+    var id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+"-"+String(Math.floor(Math.random()*100000));
+    db.pyqAttempts.push({id:id,topicId:x.id,subject:subject,topic:t,date:date,total:total,right:right,wrong:wrong,unattempted:unattempted,accuracy:accuracy,createdAt:Date.now()});
+    x.totalQuestions=total;x.right=right;x.wrong=wrong;x.acc=accuracy;
+    db.pyqSubject=subject;db.pyqTopic={subject:subject,topic:t};save();render();
   });
-  refreshTopics();
+
+  p.querySelectorAll(".pyq-delete").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      if(!confirm("Delete this PYQ attempt?"))return;
+      var id=btn.dataset.id;
+      db.pyqAttempts=db.pyqAttempts.filter(function(a){return a.id!==id;});
+      var x=db.topics.find(function(a){return a.id===selected.id;});
+      var left=selected?attemptsFor(selected.id):[];
+      if(x){
+        if(left.length){
+          var last=left[left.length-1];x.totalQuestions=last.total;x.right=last.right;x.wrong=last.wrong;x.acc=last.accuracy;
+        }else{
+          delete x.totalQuestions;delete x.right;delete x.wrong;delete x.acc;
+        }
+      }
+      save();render();
+    });
+  });
+
+  loadSelectedValues();
 }
 function mocks(p){
   var ok=mockUnlocked();
