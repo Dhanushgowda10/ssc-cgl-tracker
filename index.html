@@ -1,5 +1,48 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SSC CGL Tracker 2027</title>
-<style>body{margin:0;background:#0b1220;color:#eef2ff;font:15px Arial}*{box-sizing:border-box}.app{display:flex;min-height:100vh}aside{width:220px;background:#111a2d;padding:18px}.brand{font-size:21px;font-weight:800;margin:6px}.brand span{color:#8ba5ff}nav button{width:100%;padding:10px;margin:3px 0;background:transparent;border:0;color:#aeb9d3;text-align:left;border-radius:8px}nav button.active,nav button:hover{background:#233455;color:white}main{flex:1;padding:24px;max-width:1400px;margin:auto}.grid{display:grid;gap:14px}.cards{grid-template-columns:repeat(4,1fr)}.two{grid-template-columns:1.3fr 1fr}.card{background:#121f35;border:1px solid #2b3d60;border-radius:13px;padding:16px}.big{font-size:28px;font-weight:800}.muted{color:#95a6c5}.bar{height:8px;background:#263650;border-radius:9px}.bar i{display:block;height:100%;background:#8ba5ff;border-radius:9px}.row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #243653}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #243653;text-align:left}th{color:#95a6c5}select,input{background:#0b1628;color:white;border:1px solid #344a70;padding:8px;border-radius:8px;width:100%}.btn{background:#8ba5ff;color:#08101d;border:0;padding:9px 13px;border-radius:8px;font-weight:700}.badge{padding:4px 7px;border-radius:99px;background:#203252;font-size:12px}.good{color:#6fe0a4}.warn{color:#ffd36e}.bad{color:#ff8797}.heat{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}.day{aspect-ratio:1;background:#17243a;border-radius:3px}.l1{background:#39547d}.l2{background:#5775aa}.l3{background:#7694d7}.l4{background:#a5bdff}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cal{min-height:70px;border:1px solid #2a3d60;border-radius:8px;padding:6px}.event{font-size:10px;padding:4px;margin-top:4px;background:#233757;border-radius:4px}.event.m{background:#4a3d20}.event.o{background:#482431}@media(max-width:850px){.app{display:block}aside{width:auto}nav{display:grid;grid-template-columns:repeat(2,1fr)}.cards,.two{grid-template-columns:1fr}.calendar{grid-template-columns:repeat(2,1fr)}main{padding:14px}}</style></head>
+<style>
+:root{
+  --bg:#07101d;--bg2:#0b1628;--panel:#101d33;--panel2:#142540;--line:#273c60;
+  --text:#f5f7ff;--muted:#91a3c3;--accent:#83a1ff;--accent2:#657fe4;
+  --good:#6fe0a5;--warn:#ffd46b;--bad:#ff8497;--shadow:0 18px 50px #0005;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 75% 0,#14274a 0,transparent 32%),linear-gradient(145deg,var(--bg),#0b1527 58%,#0c1729);color:var(--text);font:15px Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+aside{width:245px;background:rgba(8,15,28,.92);border-right:1px solid rgba(60,82,120,.42);padding:22px 15px;position:sticky;top:0;height:100vh;backdrop-filter:blur(14px)}
+.brand{font-size:22px;font-weight:900;letter-spacing:-.03em;padding:8px 10px 24px}.brand span{color:var(--accent)}
+nav button{width:100%;padding:12px 14px;margin:3px 0;background:transparent;border:1px solid transparent;color:#aebbd5;text-align:left;border-radius:11px;transition:.18s}
+nav button:hover{background:#182844;color:#fff;border-color:#24385b;transform:translateX(2px)}
+nav button.active{background:linear-gradient(135deg,#1d3155,#253b68);color:#fff;border-color:#38527e;box-shadow:0 8px 25px #0003}
+main{flex:1;min-width:0;max-width:1500px;width:100%;margin:0 auto;padding:30px}
+h1{margin:0;font-size:32px;letter-spacing:-.035em}h2{margin:0 0 15px;font-size:19px;letter-spacing:-.02em}
+.muted{color:var(--muted)}.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr))}.two{grid-template-columns:1.25fr 1fr}
+.card{background:linear-gradient(145deg,rgba(18,31,53,.95),rgba(13,25,44,.96));border:1px solid rgba(56,80,119,.65);border-radius:17px;padding:19px;box-shadow:var(--shadow)}
+.section{margin-top:18px}.big{font-size:31px;font-weight:850;letter-spacing:-.04em;margin:5px 0 7px}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:#91a4c7;text-transform:uppercase}
+.bar{height:9px;background:#243652;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #243653;align-items:center}.row:last-child{border-bottom:0}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:#1b2e50;border:1px solid #2b4670;color:#cbd8f3;font-size:12px}
+.notice{padding:13px 15px;background:#142640;border:1px solid #294468;border-left:3px solid var(--accent);border-radius:10px}
+.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden}th,td{padding:11px 10px;border-bottom:1px solid #233653;text-align:left;font-size:14px}th{color:#91a3c3;font-size:12px;text-transform:uppercase;letter-spacing:.06em}tbody tr:hover{background:#13223a}
+input,select{background:#0a1527;color:#fff;border:1px solid #354c70;padding:10px 11px;border-radius:9px;outline:none;transition:.16s}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #83a1ff18}
+form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9);color:#08101e;border:0;padding:10px 14px;border-radius:10px;font-weight:800;box-shadow:0 7px 18px #0002}.btn:hover{filter:brightness(1.06);transform:translateY(-1px)}.btn.alt{background:#1d3152;color:#dce6fb;border:1px solid #304a70}
+.topline{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.page-sub{margin:7px 0 0}.topmeta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.heat{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}.day{aspect-ratio:1;background:#15243b;border-radius:3px;outline:1px solid #20324d00}.day:hover{outline-color:#6f8fd8}
+.l1{background:#36517d}.l2{background:#526fa8}.l3{background:#7090d6}.l4{background:#a3bcff}
+.calendar-wrap{margin-top:12px}.calendar-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:13px}.month-title{font-size:23px;font-weight:850;letter-spacing:-.03em}.month-sub{font-size:12px;color:var(--muted);margin-top:2px}.cal-nav{display:flex;gap:7px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid #304a70;background:#162744;color:#eef3ff}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:7px}.weekday{text-align:left;padding:7px 9px;color:#90a2c2;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.cal{min-height:108px;background:linear-gradient(160deg,#101c31,#0e1a2e);border:1px solid #293e60;border-radius:11px;padding:8px;position:relative;transition:.16s}.cal:hover{border-color:#405c88;transform:translateY(-1px)}.cal.muted-day{opacity:.45}.cal.today{border-color:#7e9eff;box-shadow:inset 0 0 0 1px #7e9eff55,0 0 0 2px #7e9eff12}.cal.sunday{background:linear-gradient(160deg,#14213a,#101a2e)}
+.calnum{font-size:13px;font-weight:800;color:#dce5f8;display:flex;justify-content:space-between}.today-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;margin-top:3px}
+.event{font-size:11px;padding:6px 7px;margin-top:6px;background:#213557;border-radius:7px;border:1px solid #304e79;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.event.monthly{background:#40371d;border-color:#66572e}.event.overdue{background:#47232e;border-color:#6b3042}
+.calendar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:11px}.legend-item{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}.legend-dot{width:9px;height:9px;border-radius:3px;background:#213557}.legend-dot.monthly{background:#40371d}.legend-dot.overdue{background:#47232e}.legend-dot.today{background:#7e9eff}
+.empty{padding:20px;border:1px dashed #304867;border-radius:10px;color:var(--muted);text-align:center}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:850px){.app{display:block}aside{width:auto;height:auto;position:relative;padding:13px}.brand{padding:6px 8px 12px}nav{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}.cards,.two{grid-template-columns:1fr}.calendar{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto;padding-bottom:5px}.weekdays{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto}.weekday{white-space:nowrap}.cal{min-height:95px}main{padding:17px}.topline{flex-direction:column}.topmeta{justify-content:flex-start}.heat{grid-template-columns:repeat(14,1fr)}}
+</style></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
 const S = {
@@ -65,15 +108,43 @@ function study(p){
 }
 function revision(p){
   var r=revisions();
-  p.innerHTML="<h1>Revision Center</h1><p class=muted>Weekly revision is scheduled for Sundays. Overdue items remain until completed.</p><div class='grid two'><div class=card><h2>🔁 Weekly</h2>"+
-  (r.filter(function(x){return x.type==="Weekly";}).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join("")||"<div class=muted>No weekly revisions.</div>")+
-  "</div><div class=card><h2>📅 Monthly</h2>"+(r.filter(function(x){return x.type==="Monthly";}).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join("")||"<div class=muted>No monthly revisions.</div>")+
-  "</div></div><div class=card style='margin-top:14px'><h2>Revision calendar</h2><div class=calendar>"+calendarHtml()+"</div></div>";
+  var weekly=r.filter(function(x){return x.type==="Weekly";});
+  var monthly=r.filter(function(x){return x.type==="Monthly";});
+  p.innerHTML="<div class='topline'><div><h1>Revision Center</h1><p class='muted page-sub'>Your long-term retention system — every completed topic gets a Sunday review and a 30-day monthly review.</p></div><div class='topmeta'><span class='badge'>🔁 Sunday weekly</span><span class='badge'>📅 30-day monthly</span></div></div>"+
+    "<div class='grid two section'>"+
+      "<div class='card'><div class='row' style='border-bottom:0'><h2>🔁 Weekly Revision</h2><span class='badge'>"+weekly.filter(function(x){return x.over;}).length+" overdue</span></div>"+
+      (weekly.length?weekly.map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join(""):"<div class='empty'>No weekly revisions are waiting.</div>")+
+      "</div>"+
+      "<div class='card'><div class='row' style='border-bottom:0'><h2>📅 Monthly Revision</h2><span class='badge'>"+monthly.filter(function(x){return x.over;}).length+" overdue</span></div>"+
+      (monthly.length?monthly.map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join(""):"<div class='empty'>No monthly revisions are waiting.</div>")+
+      "</div>"+
+    "</div>"+
+    "<div class='card section'><div id='calendarBox'>"+calendarHtml()+"</div></div>";
+  var box=document.getElementById("calendarBox");
+  box.querySelectorAll("[data-cal-nav]").forEach(function(b){b.addEventListener("click",function(){calendarCursor+=Number(b.dataset.calNav);revision(p);});});
+  box.querySelectorAll("[data-jump-today]").forEach(function(b){b.addEventListener("click",function(){var d=new Date();calendarCursor=d.getFullYear()*12+d.getMonth();revision(p);});});
 }
+var calendarCursor=(new Date().getFullYear()*12+new Date().getMonth());
 function calendarHtml(){
-  var d=new Date(),y=d.getFullYear(),m=d.getMonth(),n=new Date(y,m+1,0).getDate(),out="";
-  for(var i=0;i<new Date(y,m,1).getDay();i++)out+="<div class=cal></div>";
-  for(var day=1;day<=n;day++){var s=new Date(y,m,day,12).toISOString().slice(0,10),ev=revisions().filter(function(x){return x.date===s;});out+="<div class=cal><small>"+day+"</small>"+ev.map(function(x){return "<div class='event "+(x.type==="Monthly"?"m ":"")+(x.over?"o":"")+"'>"+x.type+" • "+esc(x.x.topic)+"</div>";}).join("")+"</div>";}
+  var y=Math.floor(calendarCursor/12),m=calendarCursor%12;
+  if(m<0){m+=12;y--;}
+  var first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate();
+  var monthName=first.toLocaleString("en-US",{month:"long"});
+  var todayDate=today(),out="<div class='calendar-wrap'><div class='calendar-head'><div><div class='month-title'>"+monthName+" "+y+"</div><div class='month-sub'>Revision calendar • Sunday is your dedicated weekly revision day</div></div><div class='cal-nav'><button class='icon-btn' data-cal-nav='-1' aria-label='Previous month'>‹</button><button class='icon-btn' data-jump-today>Today</button><button class='icon-btn' data-cal-nav='1' aria-label='Next month'>›</button></div></div>";
+  out+="<div class='weekdays'><div class='weekday'>Mon</div><div class='weekday'>Tue</div><div class='weekday'>Wed</div><div class='weekday'>Thu</div><div class='weekday'>Fri</div><div class='weekday'>Sat</div><div class='weekday'>Sun</div></div>";
+  var start=(first.getDay()+6)%7;
+  out+="<div class='calendar'>";
+  for(var i=start-1;i>=0;i--){var dn=prevDays-i;out+="<div class='cal muted-day'><div class='calnum'>"+dn+"</div></div>";}
+  for(var day=1;day<=days;day++){
+    var d=new Date(y,m,day,12),s=d.toISOString().slice(0,10),events=revisions().filter(function(x){return x.date===s;});
+    var cls="cal"+(s===todayDate?" today":"")+(d.getDay()===0?" sunday":"");
+    out+="<div class='"+cls+"'><div class='calnum'><span>"+day+"</span>"+(s===todayDate?"<span class='today-dot'></span>":"")+"</div>";
+    out+=events.map(function(x){return "<div class='event "+(x.type==="Monthly"?"monthly ":"")+(x.over?"overdue":"")+"'>"+x.type+" • "+esc(x.x.topic)+"</div>";}).join("");
+    out+="</div>";
+  }
+  var totalCells=start+days,end=totalCells%7===0?0:7-totalCells%7;
+  for(var j=1;j<=end;j++)out+="<div class='cal muted-day'><div class='calnum'>"+j+"</div></div>";
+  out+="</div><div class='calendar-legend'><span class='legend-item'><i class='legend-dot today'></i>Today</span><span class='legend-item'><i class='legend-dot'></i>Weekly</span><span class='legend-item'><i class='legend-dot monthly'></i>Monthly</span><span class='legend-item'><i class='legend-dot overdue'></i>Overdue</span></div></div>";
   return out;
 }
 function pyq(p){
