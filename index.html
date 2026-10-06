@@ -220,7 +220,7 @@ async function firebaseSyncNow(){
 }
 function firebaseAction(fn){return function(){fn().catch(function(e){firebaseSetStatus("⚠️ "+e.message,"bad");});};}
 
-function save(){localStorage.setItem("cgl2027",JSON.stringify(db));if(!cloudApplying&&cloudAutoSync&&cloudSessionUser()){var m=cloudMeta();m.localDirty=true;setCloudMeta(m);scheduleCloudPush();}}
+function save(){localStorage.setItem("cgl2027",JSON.stringify(db));if(!firebaseApplying&&firebaseAutoSync&&firebaseUser){var m=firebaseMeta();m.localDirty=true;setFirebaseMeta(m);scheduleFirebasePush();}}
 function uid(prefix){return String(prefix||"id")+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);}
 function localISO(d){
   d=d||new Date();
