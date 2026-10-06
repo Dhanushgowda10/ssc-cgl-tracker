@@ -48,6 +48,8 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 .analytics-hero{background:linear-gradient(135deg,#172d50,#0f1e36 58%,#142743)!important;border-color:#486a9e!important}.metric-note{font-size:12px;color:var(--muted)}.analytics-subject{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.subject-card{min-width:0;overflow:hidden}.subject-metric{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;min-width:0;width:100%}.subject-metric>div{min-width:0;overflow:hidden;background:#0d1a2e;border:1px solid #253d60;border-radius:10px;padding:10px}.subject-progress{height:8px;background:#1e304d;border-radius:99px;overflow:hidden;margin-top:7px}.subject-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px}.mini-chart{display:flex;align-items:end;gap:7px;height:170px;padding:18px 5px 0;overflow-x:auto}.chart-col{height:100%;min-width:30px;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:5px}.chart-bar{width:24px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:6px 6px 2px 2px;min-height:3px}.chart-val{font-size:10px;font-weight:800}.chart-date{font-size:9px;color:var(--muted);white-space:nowrap}.rank{width:25px;height:25px;border-radius:8px;background:#1a2c4b;display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:#cbd8f3}.trend-pill{padding:5px 8px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;font-size:11px}.analytics-table td{vertical-align:middle}.subject-name{font-weight:850}.subject-stat{font-size:12px;color:var(--muted)}@media(max-width:850px){.analytics-subject{grid-template-columns:1fr}.subject-metric{grid-template-columns:1fr}.mini-chart{min-width:460px}}
 
 .study-hero{background:linear-gradient(135deg,#172d50,#0f1e36 58%,#142743)!important;border-color:#486a9e!important}.study-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.study-summary>div{background:#0d1a2e;border:1px solid #294465;border-radius:12px;padding:13px;min-width:0}.metric-note{font-size:12px;color:var(--muted)}.session-pill{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;color:#cbd8f3;font-size:11px;font-weight:800}.study-history{overflow-x:auto}.study-history table{min-width:900px}.study-history td{vertical-align:middle}.study-actions{display:flex;gap:6px;justify-content:flex-end}.study-plan-list{display:grid;gap:8px}.study-plan-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#0d1a2e;border:1px solid #253d60;border-radius:10px}.study-plan-row>div{min-width:0}.study-plan-topic{font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.study-form-actions{display:flex;gap:8px;flex-wrap:wrap}.topic-mini{font-size:11px;color:var(--muted);margin-top:5px}@media(max-width:850px){.study-summary{grid-template-columns:repeat(2,1fr)}.study-plan-row{align-items:flex-start;flex-direction:column}.study-actions{justify-content:flex-start}}
+
+.rev-insights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:13px}.rev-insights>div{background:#0d1a2e;border:1px solid #294465;border-radius:10px;padding:10px;min-width:0}.rev-label{font-size:10px;font-weight:800;letter-spacing:.08em;color:#8fa2c5;text-transform:uppercase}.rev-value{font-size:18px;font-weight:900;margin-top:4px}.rev-guidance{margin-top:13px}.rev-status{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#1a2d4c;border:1px solid #2c4870;font-size:11px;font-weight:800}@media(max-width:850px){.rev-insights{grid-template-columns:repeat(2,1fr)}}
 </style></head>
 <body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
@@ -362,49 +364,73 @@ function completeRevision(id,type){
 }
 function revision(p){
   db.revisionHistory=db.revisionHistory||[];
-  var r=revisions(),weekly=r.filter(function(x){return x.type==="Weekly";}),monthly=r.filter(function(x){return x.type==="Monthly";});
-  var due=r.filter(function(x){return x.date<=today();}),upcoming=r.filter(function(x){return x.date>today();});
-  var stats=revisionStats(), active=db.activeRevision?db.topics.find(function(x){return x.id===db.activeRevision.id;}):null;
-  var activeType=db.activeRevision?db.activeRevision.type:null;
+  var r=revisions(),due=r.filter(function(x){return x.date<=today();}),upcoming=r.filter(function(x){return x.date>today();});
+  var stats=revisionStats(),active=db.activeRevision?db.topics.find(function(x){return x.id===db.activeRevision.id;}):null,activeType=db.activeRevision?db.activeRevision.type:null;
   var history=db.revisionHistory.slice().reverse().slice(0,10);
 
-  function taskCard(x){
-    var dueNow=x.date<=today(), status=dueNow?(x.over?"OVERDUE":"DUE TODAY"):"UPCOMING";
-    return "<div class='row' style='padding:14px 0;gap:14px;align-items:center'>"+
-      "<div style='min-width:0;flex:1'><div style='font-weight:850'>"+x.x.s+" • "+esc(x.x.topic)+"</div><div class='muted' style='font-size:12px;margin-top:3px'>"+x.type+" • Scheduled "+x.date+"</div></div>"+
-      "<span class='"+(x.over?"bad":"warn")+"'>"+status+"</span>"+
-      "<button class='btn alt rev-start' data-id='"+encodeURIComponent(x.x.id)+"' data-type='"+x.type+"'>▶ Start</button></div>";
+  function topicStudy(x){
+    var rows=db.study.filter(function(z){return z.topicId===x.id||(z.subject+"|"+z.topic)===x.id;});
+    return {minutes:rows.reduce(function(a,z){return a+Number(z.minutes||0);},0),questions:rows.reduce(function(a,z){return a+Number(z.questions||0);},0),last:rows.length?rows.map(function(z){return z.date;}).sort().pop():null};
   }
-  function historyRows(){
-    return history.map(function(x){return "<tr><td>"+esc(x.completedOn)+"</td><td>"+esc(x.subject)+"</td><td>"+esc(x.topic)+"</td><td>"+x.type+"</td></tr>";}).join("");
+  function topicPyq(x){
+    var rows=db.pyqAttempts.filter(function(z){return z.topicId===x.id;}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))||Number(a.createdAt||0)-Number(b.createdAt||0);});
+    if(rows.length)return {attempts:rows.length,latest:Number(rows[rows.length-1].accuracy||0),best:Math.max.apply(null,rows.map(function(z){return Number(z.accuracy||0);})),last:rows[rows.length-1].date};
+    return {attempts:0,latest:x.acc==null?null:Number(x.acc),best:x.acc==null?null:Number(x.acc),last:null};
   }
+  function revisionCount(x,type){
+    return history.filter(function(h){return h.topicId===x.id&&h.type===type;}).length;
+  }
+  function statusFor(x){
+    var py=topicPyq(x);
+    if(py.latest==null)return {label:"No PYQ data",cls:"muted"};
+    if(py.latest<70)return {label:"Weak",cls:"bad"};
+    if(py.latest<85)return {label:"Needs work",cls:"warn"};
+    return {label:"Strong",cls:"good"};
+  }
+
+  function taskCard(item){
+    var x=item.x, dueNow=item.date<=today(), label=dueNow?(item.over?"OVERDUE":"DUE TODAY"):"UPCOMING";
+    var st=topicStudy(x),py=topicPyq(x),ss=statusFor(x);
+    return "<div class='row' style='padding:15px 0;gap:14px;align-items:flex-start'>"+
+      "<div style='min-width:0;flex:1'><div style='font-weight:850'>"+esc(x.s)+" • "+esc(x.topic)+"</div><div class='muted' style='font-size:12px;margin-top:3px'>"+item.type+" • Scheduled "+item.date+"</div>"+
+      "<div class='rev-insights'><div><div class='rev-label'>Study time</div><div class='rev-value'>"+Math.round(st.minutes/60*10)/10+"h</div></div><div><div class='rev-label'>Questions</div><div class='rev-value'>"+st.questions+"</div></div><div><div class='rev-label'>Latest PYQ</div><div class='rev-value'>"+(py.latest==null?"—":py.latest+"%")+"</div></div><div><div class='rev-label'>Best PYQ</div><div class='rev-value'>"+(py.best==null?"—":py.best+"%")+"</div></div></div>"+
+      "<div class='rev-guidance'><span class='rev-status "+ss.cls+"'>"+ss.label+"</span>"+(st.last?" <span class='muted' style='font-size:11px'>Last studied "+esc(st.last)+"</span>":"")+"</div></div>"+
+      "<span class='"+(item.over?"bad":"warn")+"'>"+label+"</span><button class='btn alt rev-start' data-id='"+encodeURIComponent(x.id)+"' data-type='"+item.type+"'>▶ Start</button></div>";
+  }
+  function historyRows(){return history.map(function(x){return "<tr><td>"+esc(x.completedOn)+"</td><td>"+esc(x.subject)+"</td><td>"+esc(x.topic)+"</td><td>"+x.type+"</td></tr>";}).join("");}
 
   var activeHtml="";
   if(active&&activeType){
-    activeHtml="<div class='card section' style='background:linear-gradient(135deg,#172d50,#101f37 60%,#152846);border-color:#486a9e'><div class='topline'><div><div class='kicker'>▶ REVISION MODE</div><h2 style='font-size:24px;margin:5px 0'>"+esc(active.s)+" — "+esc(active.topic)+"</h2><div class='muted'>"+activeType+" revision • Started "+esc(db.activeRevision.startedOn)+"</div></div><span class='badge'>Focus mode</span></div>"+
-      "<div class='grid three' style='margin-top:14px'><div class='notice'>☑ <b>Recall first</b><br><span class='muted'>Try to reproduce the concept without notes.</span></div><div class='notice'>📝 <b>Review mistakes</b><br><span class='muted'>Check errors and weak points.</span></div><div class='notice'>🧮 <b>Practice</b><br><span class='muted'>Solve a small set of PYQs.</span></div></div>"+
-      "<div style='display:flex;gap:8px;margin-top:15px'><button id='completeActive' class='btn'>✓ Mark Revision Complete</button><button id='cancelActive' class='btn alt'>Exit Mode</button></div></div>";
+    var ast=topicStudy(active),apy=topicPyq(active),ass=statusFor(active),ahist=history.filter(function(h){return h.topicId===active.id;}).length;
+    activeHtml="<div class='card section' style='background:linear-gradient(135deg,#172d50,#101f37 60%,#152846);border-color:#486a9e'><div class='topline'><div><div class='kicker'>▶ REVISION MODE</div><h2 style='font-size:24px;margin:5px 0'>"+esc(active.s)+" — "+esc(active.topic)+"</h2><div class='muted'>"+activeType+" revision • Started "+esc(db.activeRevision.startedOn)+"</div></div><span class='badge'>"+ass.label+"</span></div>"+
+      "<div class='rev-insights'><div><div class='rev-label'>Study time</div><div class='rev-value'>"+Math.round(ast.minutes/60*10)/10+"h</div></div><div><div class='rev-label'>Questions</div><div class='rev-value'>"+ast.questions+"</div></div><div><div class='rev-label'>Latest PYQ</div><div class='rev-value'>"+(apy.latest==null?"—":apy.latest+"%")+"</div></div><div><div class='rev-label'>Previous revisions</div><div class='rev-value'>"+ahist+"</div></div></div>"+
+      "<div class='grid three' style='margin-top:14px'><div class='notice'>☑ <b>Recall first</b><br><span class='muted'>Try to reproduce the concept without notes.</span></div><div class='notice'>📝 <b>Review mistakes</b><br><span class='muted'>Compare mistakes with your latest PYQ performance.</span></div><div class='notice'>🧮 <b>Practice</b><br><span class='muted'>Solve a small set of PYQs, then record the questions below.</span></div></div>"+
+      "<div class='card' style='margin-top:14px;background:#0d1a2e;border-color:#294465'><div class='kicker'>OPTIONAL: LOG THIS REVISION SESSION</div><div class='muted' style='font-size:12px;margin:5px 0 10px'>Enter the time and questions you actually spend. It will be added to Study Log as a Revision session.</div><div class='grid two'><label class='muted'>Revision minutes<input id='revMinutes' type='number' min='0' value='0'></label><label class='muted'>Questions solved<input id='revQuestions' type='number' min='0' value='0'></label></div></div>"+
+      "<div class='study-form-actions' style='margin-top:15px'><button id='completeActive' class='btn'>✓ Mark Revision Complete</button><button id='cancelActive' class='btn alt'>Exit Mode</button></div></div>";
   }
 
-  p.innerHTML="<div class='topline'><div><h1>Revision Center</h1><p class='muted page-sub'>Turn completed topics into a repeatable retention system: weekly → monthly → history.</p></div><div class='topmeta'><span class='badge'>🔁 Sunday weekly</span><span class='badge'>📅 30-day monthly</span></div></div>"+
+  p.innerHTML="<div class='topline'><div><h1>Revision Center 2.0</h1><p class='muted page-sub'>Revision now reads the same topic data as Study Log and PYQ, so every revision decision is based on your actual preparation.</p></div><div class='topmeta'><span class='badge'>🔁 Sunday weekly</span><span class='badge'>📅 30-day monthly</span></div></div>"+
     "<div class='grid cards section'><div class='card'><div class='kicker'>DUE / OVERDUE</div><div class='big'>"+due.length+"</div><div class='muted'>"+due.filter(function(x){return x.over;}).length+" overdue</div></div><div class='card'><div class='kicker'>COMPLETED THIS WEEK</div><div class='big'>"+stats.week+"</div><div class='muted'>revision sessions</div></div><div class='card'><div class='kicker'>COMPLETED THIS MONTH</div><div class='big'>"+stats.month+"</div><div class='muted'>revision sessions</div></div><div class='card'><div class='kicker'>🔥 SUNDAY STREAK</div><div class='big'>"+stats.streak+"</div><div class='muted'>consecutive weekly cycles</div></div></div>"+
     activeHtml+
-    "<div class='grid two section'><div class='card'><div class='row' style='border-bottom:0'><h2>🔴 Due Today / Overdue</h2><span class='badge'>"+due.length+" items</span></div>"+
-      (due.length?due.map(taskCard).join(""):"<div class='empty'>Nothing due. Great job staying ahead.</div>")+
-    "</div><div class='card'><div class='row' style='border-bottom:0'><h2>📆 Upcoming</h2><span class='badge'>"+upcoming.length+" scheduled</span></div>"+
-      (upcoming.length?upcoming.slice(0,12).map(taskCard).join(""):"<div class='empty'>No upcoming revisions right now.</div>")+
-    "</div></div>"+
+    "<div class='grid two section'><div class='card'><div class='row' style='border-bottom:0'><h2>🔴 Due Today / Overdue</h2><span class='badge'>"+due.length+" items</span></div>"+(due.length?due.map(taskCard).join(""):"<div class='empty'>Nothing due. Great job staying ahead.</div>")+"</div>"+
+    "<div class='card'><div class='row' style='border-bottom:0'><h2>📆 Upcoming</h2><span class='badge'>"+upcoming.length+" scheduled</span></div>"+(upcoming.length?upcoming.slice(0,12).map(taskCard).join(""):"<div class='empty'>No upcoming revisions right now.</div>")+"</div></div>"+
     "<div class='card section'><div id='calendarBox'>"+calendarHtml()+"</div></div>"+
-    "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>REVISION HISTORY</div><h2 style='margin:4px 0 0'>✅ Recent completions</h2></div><span class='badge'>Last 10</span></div>"+
-      (history.length?"<table><tr><th>Completed</th><th>Subject</th><th>Topic</th><th>Type</th></tr>"+historyRows()+"</table>":"<div class='empty'>Your revision history will appear here.</div>")+
-    "</div>";
+    "<div class='card section'><div class='row' style='border-bottom:0'><div><div class='kicker'>REVISION HISTORY</div><h2 style='margin:4px 0 0'>✅ Recent completions</h2></div><span class='badge'>Last 10</span></div>"+(history.length?"<table><tr><th>Completed</th><th>Subject</th><th>Topic</th><th>Type</th></tr>"+historyRows()+"</table>":"<div class='empty'>Your revision history will appear here.</div>")+"</div>";
 
   var box=document.getElementById("calendarBox");
-  box.querySelectorAll("[data-cal-nav]").forEach(function(b){b.addEventListener("click",function(){calendarCursor+=Number(b.dataset.calNav);revision(p);});});
-  box.querySelectorAll("[data-jump-today]").forEach(function(b){b.addEventListener("click",function(){var d=new Date();calendarCursor=d.getFullYear()*12+d.getMonth();revision(p);});});
-  p.querySelectorAll(".rev-start").forEach(function(b){b.addEventListener("click",function(){startRevision(decodeURIComponent(b.dataset.id),b.dataset.type);});});
+  box.querySelectorAll("[data-cal-nav]").forEach(function(button){button.addEventListener("click",function(){calendarCursor+=Number(button.dataset.calNav);revision(p);});});
+  box.querySelectorAll("[data-jump-today]").forEach(function(button){button.addEventListener("click",function(){var d=new Date();calendarCursor=d.getFullYear()*12+d.getMonth();revision(p);});});
+  p.querySelectorAll(".rev-start").forEach(function(button){button.addEventListener("click",function(){startRevision(decodeURIComponent(button.dataset.id),button.dataset.type);});});
   if(active&&activeType){
-    document.getElementById("completeActive").addEventListener("click",function(){completeRevision(active.id,activeType);});
+    document.getElementById("completeActive").addEventListener("click",function(){
+      var minutes=Number(document.getElementById("revMinutes").value||0),questions=Number(document.getElementById("revQuestions").value||0);
+      if(minutes<0||questions<0)return;
+      if(minutes>0||questions>0){
+        var typ="Revision";
+        db.study.push({id:uid("study"),date:today(),subject:active.s,topic:active.topic,minutes:minutes,questions:questions,type:typ,sessionType:typ,source:"Revision",sourceId:active.id});
+      }
+      completeRevision(active.id,activeType);
+    });
     document.getElementById("cancelActive").addEventListener("click",function(){delete db.activeRevision;save();revision(p);});
   }
 }
