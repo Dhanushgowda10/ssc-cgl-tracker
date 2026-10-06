@@ -239,11 +239,58 @@ function calendarHtml(){
   return out;
 }
 function pyq(p){
-  p.innerHTML="<h1>PYQ Tracker</h1><p class=muted>Enter your latest accuracy for a chapter.</p><div class=card><form id=pyqForm><select name=subject>"+Object.keys(S).map(function(s){return "<option>"+s+"</option>";}).join("")+"</select><select name=topic>"+Object.values(S).flat().map(function(t){return "<option>"+esc(t)+"</option>";}).join("")+"</select><input name=accuracy type=number min=0 max=100 placeholder='Accuracy %' required><button class=btn>Save Accuracy</button></form></div>"+
-  "<div class=card style='margin-top:14px'><table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+db.topics.filter(function(x){return x.acc!=null;}).sort(function(a,b){return a.acc-b.acc;}).map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class="+(x.acc<70?"bad":x.acc<85?"warn":"good")+">"+x.acc+"%</td></tr>";}).join("")+"</table></div>";
-  document.getElementById("pyqForm").addEventListener("submit",function(e){e.preventDefault();var f=new FormData(e.target),x=db.topics.find(function(t){return t.s===f.get("subject")&&t.topic===f.get("topic");});if(x)x.acc=Number(f.get("accuracy"));save();render();});
-}
-function mocks(p){
+  var selectedSubject=(db.pyqSubject&&S[db.pyqSubject])?db.pyqSubject:"Quant";
+  var rows=db.topics.filter(function(x){return x.totalQuestions!=null;}).sort(function(a,b){return (a.s+a.topic).localeCompare(b.s+b.topic);});
+  var totalAll=rows.reduce(function(s,x){return s+Number(x.totalQuestions||0);},0);
+  var rightAll=rows.reduce(function(s,x){return s+Number(x.right||0);},0);
+  var wrongAll=rows.reduce(function(s,x){return s+Number(x.wrong||0);},0);
+  var accuracyAll=totalAll?Math.round(rightAll/totalAll*1000)/10:0;
+  p.innerHTML="<div class='topline'><div><h1>PYQ Tracker</h1><p class='muted page-sub'>Track questions solved. Enter total, right and wrong — accuracy is calculated automatically.</p></div><div class='topmeta'><span class='badge'>📝 "+totalAll+" solved</span><span class='badge'>✅ "+rightAll+" right</span><span class='badge'>📊 "+accuracyAll+"% overall accuracy</span></div></div>"+
+  "<div class='card section'><form id='pyqForm'><div class='grid two'><label class='muted'>Subject<select id='pyqSubject' name='subject'>"+Object.keys(S).map(function(s){return "<option value='"+esc(s)+"' "+(s===selectedSubject?"selected":"")+">"+s+"</option>";}).join("")+"</select></label>"+
+  "<label class='muted'>Topic<select id='pyqTopic' name='topic'></select></label></div>"+
+  "<div class='grid three'><label class='muted'>Total Questions<input name='total' type='number' min='1' placeholder='e.g. 50' required></label><label class='muted'>Right<input name='right' type='number' min='0' placeholder='e.g. 42' required></label><label class='muted'>Wrong<input name='wrong' type='number' min='0' placeholder='e.g. 8' required></label></div>"+
+  "<div class='notice' id='accPreview'>Accuracy will be calculated automatically.</div><button class='btn' type='submit'>Save PYQ Result</button></form></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><h2>📚 Topic-wise PYQ Performance</h2><span class='badge'>"+rows.length+" tracked topics</span></div>"+
+  (rows.length?"<table><tr><th>Subject</th><th>Topic</th><th>Total</th><th>Right</th><th>Wrong</th><th>Accuracy</th></tr>"+rows.map(function(x){
+    var a=x.totalQuestions?Math.round(Number(x.right||0)/Number(x.totalQuestions)*1000)/10:0;
+    return "<tr><td>"+esc(x.s)+"</td><td>"+esc(x.topic)+"</td><td>"+Number(x.totalQuestions||0)+"</td><td class='good'>"+Number(x.right||0)+"</td><td class='bad'>"+Number(x.wrong||0)+"</td><td class='"+(a<70?"bad":a<85?"warn":"good")+"'>"+a+"%</td></tr>";
+  }).join("")+"</table>":"<div class='empty'>No PYQ results saved yet.</div>")+"</div>";
+
+  var subj=document.getElementById("pyqSubject"),topic=document.getElementById("pyqTopic"),form=document.getElementById("pyqForm"),preview=document.getElementById("accPreview");
+  function refreshTopics(){
+    var s=subj.value;
+    topic.innerHTML=(S[s]||[]).map(function(t){return "<option value='"+esc(t)+"'>"+esc(t)+"</option>";}).join("");
+    var current=db.topics.find(function(x){return x.s===s&&x.topic===topic.value;});
+    if(current && current.totalQuestions!=null){
+      form.total.value=current.totalQuestions;form.right.value=current.right||0;form.wrong.value=current.wrong||0;
+      updatePreview();
+    }else{
+      form.total.value="";form.right.value="";form.wrong.value="";preview.innerHTML="Accuracy will be calculated automatically.";
+    }
+  }
+  function updatePreview(){
+    var t=Number(form.total.value||0),r=Number(form.right.value||0),w=Number(form.wrong.value||0);
+    var a=t?Math.round(r/t*1000)/10:0;
+    if(t && r+w!==t){preview.innerHTML="<span class='warn'>⚠️ Right + Wrong should equal Total ("+t+"). Current: "+(r+w)+"</span>";}
+    else preview.innerHTML=t?"<b>Calculated Accuracy: "+a+"%</b>":"Accuracy will be calculated automatically.";
+  }
+  subj.addEventListener("change",function(){db.pyqSubject=subj.value;save();refreshTopics();});
+  topic.addEventListener("change",function(){
+    var x=db.topics.find(function(a){return a.s===subj.value&&a.topic===topic.value;});
+    if(x&&x.totalQuestions!=null){form.total.value=x.totalQuestions;form.right.value=x.right||0;form.wrong.value=x.wrong||0;}else{form.total.value="";form.right.value="";form.wrong.value="";}
+    updatePreview();
+  });
+  ["total","right","wrong"].forEach(function(n){form[n].addEventListener("input",updatePreview);});
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var subject=subj.value,t=topic.value,total=Number(form.total.value||0),right=Number(form.right.value||0),wrong=Number(form.wrong.value||0);
+    if(!total || right<0 || wrong<0 || right+wrong!==total){alert("Please make sure Total = Right + Wrong.");return;}
+    var x=db.topics.find(function(a){return a.s===subject&&a.topic===t;});
+    if(x){x.totalQuestions=total;x.right=right;x.wrong=wrong;x.acc=Math.round(right/total*1000)/10;}
+    db.pyqSubject=subject;save();render();
+  });
+  refreshTopics();
+}function mocks(p){
   var ok=mockUnlocked();
   p.innerHTML="<h1>Mock Tests</h1><div class=badge>"+(ok?"🎯 50% syllabus reached — full mocks enabled":"🔒 Full mocks unlock after 50% syllabus completion")+"</div>"+
   (ok?"<div class=card style='margin-top:12px'><form id=mockForm><input name=date type=date value="+today()+" required><input name=name placeholder='Mock name' required><input name=score type=number placeholder='Score' required><input name=total type=number value=200><button class=btn>Add Mock</button></form></div>":"")+
