@@ -916,38 +916,35 @@ function analytics(p){
 }
 function backup(p){
   var cfg=cloudConfig();
-  p.innerHTML="<div class='topline'><div><h1>Backup & Settings</h1><p class='muted page-sub'>Keep your JSON backup, or link this tracker to Supabase so the same account works on laptop, tablet and phone.</p></div><div class='topmeta'><span class='badge'>"+(cloudAutoSync?"🔄 Cloud auto-sync ON":"💾 Local backup active")+"</span></div></div>"+
-  "<div class='card section'><div class='kicker'>💾 LOCAL BACKUP</div><h2 style='margin:4px 0 0'>Your safety net</h2><p class='muted'>JSON export stays available even after cloud sync. Import a backup to restore this browser.</p><div class='cloud-actions'><button id='export' class='btn'>Export JSON Backup</button><input id='import' type='file' accept='.json'><button id='restore' class='btn alt'>Restore Backup</button></div><div style='margin-top:14px'><label class='muted'>Daily target hours <input id='hours' type='number' min='1' max='24' value='"+db.settings.hours+"'></label> <button id='saveHours' class='btn alt'>Save</button></div></div>"+
-  "<div class='card section cloud-card'><div class='row' style='border-bottom:0;align-items:flex-start'><div><div class='kicker'>☁️ MULTI-DEVICE CLOUD SYNC</div><h2 style='margin:4px 0 0'>Use the same tracker everywhere</h2><div class='cloud-help'>Supabase Auth keeps your account signed in on each device. Your tracker data is stored as one private JSON record per user and protected by Row Level Security.</div></div><span id='cloudAutoBadge' class='badge'>"+(cloudAutoSync?"AUTO-SYNC ON":"AUTO-SYNC OFF")+"</span></div>"+
-  "<div class='notice' style='margin-top:14px'><b>How to link your devices:</b> on the device that already has your data, sign in and choose <b>Upload this device</b>. On a fresh device, sign in and choose <b>Download cloud</b>. After that, changes are automatically synced while the app is open.</div>"+
-  "<div id='cloudStatus' class='cloud-status'><span class='muted'>Checking cloud connection…</span></div>"+
-  "<div class='cloud-grid' style='margin-top:14px'><div><label class='muted'>Supabase Project URL<input id='cloudProjectUrl' style='width:100%' placeholder='https://your-project.supabase.co' value='"+esc(cfg.url||"")+"'></label></div><div><label class='muted'>Publishable / anon key<input id='cloudAnonKey' style='width:100%' placeholder='sb_publishable_…' value='"+esc(cfg.key||"")+"'></label></div></div>"+
-  "<div class='cloud-actions' style='margin-top:10px'><button id='cloudConnect' class='btn alt'>Save & Connect</button></div>"+
-  "<div class='cloud-grid' style='margin-top:14px'><div><label class='muted'>Email<input id='cloudEmail' type='email' style='width:100%' autocomplete='username' placeholder='you@example.com'></label></div><div><label class='muted'>Password<input id='cloudPassword' type='password' style='width:100%' autocomplete='current-password' placeholder='Your password'></label></div></div>"+
-  "<div class='cloud-actions' style='margin-top:10px'><button id='cloudSignup' class='btn alt'>Create account</button><button id='cloudSignin' class='btn'>Sign in</button><button id='cloudSignout' class='btn alt'>Sign out</button></div>"+
-  "<div id='cloudAccountStatus' class='cloud-status' style='margin-top:10px'></div>"+
-  "<div class='cloud-actions' style='margin-top:14px'><button id='cloudUpload' class='btn'>⬆ Upload this device</button><button id='cloudDownload' class='btn alt'>⬇ Download cloud</button><button id='cloudSyncNow' class='btn alt'>🔄 Sync Now</button></div>"+
-  "<p class='cloud-help' style='margin-top:12px'>Use only your Supabase publishable/anon key here. Never put a <b>service_role</b> or other secret server key into this public GitHub Pages app.</p></div>"+
-  "<div class='notice section'>⚠️ <b>Conflict rule:</b> normal changes auto-sync after a short delay. When both devices changed before either one syncs, <b>Sync Now</b> lets you choose which copy wins. A safety snapshot is kept before cloud download.</div>"+
-  "<div class='card section'><div class='kicker'>⚙️ DATABASE SETUP</div><h2 style='margin:4px 0 0'>One-time Supabase step</h2><p class='muted'>Run the <b>supabase-setup.sql</b> file from this repository in Supabase Dashboard → SQL Editor, then return here and enter the Project URL and publishable/anon key.</p></div>";
-
+  p.innerHTML="<h1>Backup & Settings</h1>"+
+  "<div class=\"card section\"><div class=\"kicker\">💾 LOCAL BACKUP</div><p class=\"muted\">JSON export remains your offline safety net.</p><button id=\"export\" class=\"btn\">Export JSON Backup</button> <input id=\"import\" type=\"file\" accept=\".json\"> <button id=\"restore\" class=\"btn alt\">Restore Backup</button><div style=\"margin-top:14px\"><label class=\"muted\">Daily target hours <input id=\"hours\" type=\"number\" min=\"1\" max=\"24\" value=\""+db.settings.hours+"\"></label> <button id=\"saveHours\" class=\"btn alt\">Save</button></div></div>"+
+  "<div class=\"card section cloud-card\"><div class=\"kicker\">☁️ MULTI-DEVICE CLOUD SYNC</div><h2 style=\"margin:4px 0 0\">One tracker on every device</h2><p class=\"cloud-help\">Use one Supabase account. Existing data stays local until you upload it; a fresh device can download the cloud copy.</p>"+
+  "<div id=\"cloudStatus\" class=\"cloud-status\">Checking cloud connection…</div>"+
+  "<div class=\"cloud-grid\"><label class=\"muted\">Project URL<input id=\"cloudProjectUrl\" style=\"width:100%\" placeholder=\"https://your-project.supabase.co\" value=\""+esc(cfg.url||"")+"\"></label><label class=\"muted\">Publishable / anon key<input id=\"cloudAnonKey\" style=\"width:100%\" value=\""+esc(cfg.key||"")+"\"></label></div>"+
+  "<div class=\"cloud-actions\" style=\"margin-top:10px\"><button id=\"cloudConnect\" class=\"btn alt\">Save & Connect</button></div>"+
+  "<div class=\"cloud-grid\" style=\"margin-top:14px\"><label class=\"muted\">Email<input id=\"cloudEmail\" type=\"email\" style=\"width:100%\" placeholder=\"you@example.com\"></label></div>"+
+  "<div class=\"cloud-actions\" style=\"margin-top:10px\"><button id=\"cloudSignup\" class=\"btn\">Send sign-in link</button><button id=\"cloudSignout\" class=\"btn alt\">Sign out</button></div>"+
+  "<div id=\"cloudAccountStatus\" class=\"cloud-status\" style=\"margin-top:10px\"></div>"+
+  "<div class=\"cloud-actions\" style=\"margin-top:14px\"><button id=\"cloudUpload\" class=\"btn\">⬆ Upload this device</button><button id=\"cloudDownload\" class=\"btn alt\">⬇ Download cloud</button><button id=\"cloudSyncNow\" class=\"btn alt\">🔄 Sync Now</button></div>"+
+  "<p class=\"cloud-help\" style=\"margin-top:12px\">Use only the public browser key from Supabase here. Keep private server credentials out of the GitHub Pages app.</p></div>"+
+  "<div class=\"notice section\">Run <b>supabase-setup.sql</b> once in Supabase Dashboard → SQL Editor. On your current device, send the sign-in link and upload. On a new device, sign in and download.</div>";
   document.getElementById("export").onclick=exportDB;
   document.getElementById("restore").onclick=importDB;
   document.getElementById("saveHours").onclick=function(){db.settings.hours=Number(document.getElementById("hours").value)||8;save();render();};
   document.getElementById("cloudConnect").onclick=cloudAction(cloudConnectFromForm);
-  document.getElementById("cloudSignup").onclick=cloudAction(cloudSignUp);
-  document.getElementById("cloudSignin").onclick=cloudAction(cloudSignIn);
+  document.getElementById("cloudSignup").onclick=cloudAction(function(){
+    var email=document.getElementById("cloudEmail").value.trim();
+    if(!email)throw new Error("Enter your email address.");
+    saveCloudConfig(document.getElementById("cloudProjectUrl").value,document.getElementById("cloudAnonKey").value);
+    var c=ensureCloudClient();
+    return c.auth.signInWithOtp({email:email,options:{emailRedirectTo:location.href.split("#")[0],shouldCreateUser:true}}).then(function(res){if(res.error)throw res.error;cloudSetStatus("✅ Check your email for the sign-in link.","good");});
+  });
   document.getElementById("cloudSignout").onclick=cloudAction(cloudSignOut);
   document.getElementById("cloudUpload").onclick=cloudAction(cloudUpload);
   document.getElementById("cloudDownload").onclick=cloudAction(cloudDownload);
   document.getElementById("cloudSyncNow").onclick=cloudAction(cloudSyncNow);
   cloudSetAccountStatus();
-  refreshCloudSession().then(function(){
-    cloudSetAccountStatus();
-    if(cloudSessionUser())cloudSetStatus("✅ Cloud account ready.","good");
-    else if(cfg.url&&cfg.key)cloudSetStatus("Project saved. Sign in to start syncing.","muted");
-    else cloudSetStatus("Enter Supabase project details to connect.","muted");
-  });
+  refreshCloudSession().then(function(){cloudSetAccountStatus();if(cloudSessionUser())cloudSetStatus("✅ Cloud account ready.","good");else if(cfg.url&&cfg.key)cloudSetStatus("Project saved. Send a sign-in link.","muted");else cloudSetStatus("Enter Supabase project details to connect.","muted");});
 }
 function exportDB(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="ssc-cgl-2027-backup-"+today()+".json";a.click();}
 function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{var incoming=JSON.parse(r.result);if(!incoming||!Array.isArray(incoming.topics)||!Array.isArray(incoming.study))throw new Error("invalid");db=incoming;normalizeDb();save();render();alert("Backup restored.");}catch(e){alert("Invalid backup file.");}};r.readAsText(f);}
