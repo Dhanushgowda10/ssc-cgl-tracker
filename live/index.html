@@ -1,0 +1,392 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SSC CGL Tracker 2027</title>
+<style>
+:root{
+  --bg:#07101d;--bg2:#0b1628;--panel:#101d33;--panel2:#142540;--line:#273c60;
+  --text:#f5f7ff;--muted:#91a3c3;--accent:#83a1ff;--accent2:#657fe4;
+  --good:#6fe0a5;--warn:#ffd46b;--bad:#ff8497;--shadow:0 18px 50px #0005;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 75% 0,#14274a 0,transparent 32%),linear-gradient(145deg,var(--bg),#0b1527 58%,#0c1729);color:var(--text);font:15px Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+aside{width:245px;background:rgba(8,15,28,.92);border-right:1px solid rgba(60,82,120,.42);padding:22px 15px;position:sticky;top:0;height:100vh;backdrop-filter:blur(14px)}
+.brand{font-size:22px;font-weight:900;letter-spacing:-.03em;padding:8px 10px 24px}.brand span{color:var(--accent)}
+nav button{width:100%;padding:12px 14px;margin:3px 0;background:transparent;border:1px solid transparent;color:#aebbd5;text-align:left;border-radius:11px;transition:.18s}
+nav button:hover{background:#182844;color:#fff;border-color:#24385b;transform:translateX(2px)}
+nav button.active{background:linear-gradient(135deg,#1d3155,#253b68);color:#fff;border-color:#38527e;box-shadow:0 8px 25px #0003}
+main{flex:1;min-width:0;max-width:1500px;width:100%;margin:0 auto;padding:30px}
+h1{margin:0;font-size:32px;letter-spacing:-.035em}h2{margin:0 0 15px;font-size:19px;letter-spacing:-.02em}
+.muted{color:var(--muted)}.grid{display:grid;gap:16px}.cards{grid-template-columns:repeat(4,minmax(0,1fr))}.two{grid-template-columns:1.25fr 1fr}
+.card{background:linear-gradient(145deg,rgba(18,31,53,.95),rgba(13,25,44,.96));border:1px solid rgba(56,80,119,.65);border-radius:17px;padding:19px;box-shadow:var(--shadow)}
+.section{margin-top:18px}.big{font-size:31px;font-weight:850;letter-spacing:-.04em;margin:5px 0 7px}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:#91a4c7;text-transform:uppercase}
+.bar{height:9px;background:#243652;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:99px}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #243653;align-items:center}.row:last-child{border-bottom:0}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:#1b2e50;border:1px solid #2b4670;color:#cbd8f3;font-size:12px}
+.notice{padding:13px 15px;background:#142640;border:1px solid #294468;border-left:3px solid var(--accent);border-radius:10px}
+.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden}th,td{padding:11px 10px;border-bottom:1px solid #233653;text-align:left;font-size:14px}th{color:#91a3c3;font-size:12px;text-transform:uppercase;letter-spacing:.06em}tbody tr:hover{background:#13223a}
+input,select{background:#0a1527;color:#fff;border:1px solid #354c70;padding:10px 11px;border-radius:9px;outline:none;transition:.16s}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #83a1ff18}
+form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9);color:#08101e;border:0;padding:10px 14px;border-radius:10px;font-weight:800;box-shadow:0 7px 18px #0002}.btn:hover{filter:brightness(1.06);transform:translateY(-1px)}.btn.alt{background:#1d3152;color:#dce6fb;border:1px solid #304a70}
+.topline{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}.page-sub{margin:7px 0 0}.topmeta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.heat{display:grid;grid-template-columns:repeat(20,1fr);gap:4px}.day{aspect-ratio:1;background:#15243b;border-radius:3px;outline:1px solid #20324d00}.day:hover{outline-color:#6f8fd8}
+.l1{background:#36517d}.l2{background:#526fa8}.l3{background:#7090d6}.l4{background:#a3bcff}
+.calendar-wrap{margin-top:12px}.calendar-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:13px}.month-title{font-size:23px;font-weight:850;letter-spacing:-.03em}.month-sub{font-size:12px;color:var(--muted);margin-top:2px}.cal-nav{display:flex;gap:7px}.icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid #304a70;background:#162744;color:#eef3ff}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:7px}.weekday{text-align:left;padding:7px 9px;color:#90a2c2;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.cal{min-height:108px;background:linear-gradient(160deg,#101c31,#0e1a2e);border:1px solid #293e60;border-radius:11px;padding:8px;position:relative;transition:.16s}.cal:hover{border-color:#405c88;transform:translateY(-1px)}.cal.muted-day{opacity:.45}.cal.today{border-color:#7e9eff;box-shadow:inset 0 0 0 1px #7e9eff55,0 0 0 2px #7e9eff12}.cal.sunday{background:linear-gradient(160deg,#14213a,#101a2e)}
+.calnum{font-size:13px;font-weight:800;color:#dce5f8;display:flex;justify-content:space-between}.today-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;margin-top:3px}
+.event{font-size:11px;padding:6px 7px;margin-top:6px;background:#213557;border-radius:7px;border:1px solid #304e79;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.event.monthly{background:#40371d;border-color:#66572e}.event.overdue{background:#47232e;border-color:#6b3042}
+.calendar-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:11px}.legend-item{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px}.legend-dot{width:9px;height:9px;border-radius:3px;background:#213557}.legend-dot.monthly{background:#40371d}.legend-dot.overdue{background:#47232e}.legend-dot.today{background:#7e9eff}
+.empty{padding:20px;border:1px dashed #304867;border-radius:10px;color:var(--muted);text-align:center}
+@media(max-width:1000px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:850px){.app{display:block}aside{width:auto;height:auto;position:relative;padding:13px}.brand{padding:6px 8px 12px}nav{display:grid;grid-template-columns:repeat(2,1fr);gap:3px}.cards,.two{grid-template-columns:1fr}.calendar{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto;padding-bottom:5px}.weekdays{grid-template-columns:repeat(7,minmax(70px,1fr));overflow-x:auto}.weekday{white-space:nowrap}.cal{min-height:95px}main{padding:17px}.topline{flex-direction:column}.topmeta{justify-content:flex-start}.heat{grid-template-columns:repeat(14,1fr)}}
+</style></head>
+<body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
+<script>
+const S = {
+  Quant: ["Number System","Percentage","Ratio & Proportion","Average","Profit & Loss","Simple & Compound Interest","Time & Work","Time, Speed & Distance","Algebra","Geometry","Mensuration","Trigonometry","Data Interpretation"],
+  English: ["Noun","Pronoun","Verb","Adjective","Adverb","Articles","Prepositions","Tenses","Voice","Narration","Error Detection","Synonyms & Antonyms","One Word Substitution","Idioms & Phrases","Cloze Test","Reading Comprehension"],
+  Reasoning: ["Analogy","Classification","Series","Coding-Decoding","Blood Relations","Direction Sense","Venn Diagrams","Syllogism","Statement & Conclusion","Ranking","Non-Verbal Reasoning","Mirror & Water Image","Paper Folding","Embedded Figures"],
+  GA: ["Ancient History","Medieval History","Modern History","Indian Polity","Geography","Economics","General Science","Physics","Chemistry","Biology","Static GK","Current Affairs"]
+};
+function makeTopics(){return Object.keys(S).flatMap(function(s){return S[s].map(function(topic){return {id:s+"|"+topic,s:s,topic:topic,status:"Not started",studied:null,weekly:null,monthly:null,weeklyDone:false,monthlyDone:false,acc:null};});});}
+let db;
+try{db=JSON.parse(localStorage.getItem("cgl2027")||"null");}catch(e){db=null;}
+if(!db || !Array.isArray(db.topics)){db={topics:makeTopics(),study:[],mocks:[],settings:{hours:8}};}
+if(!db.study)db.study=[]; if(!db.mocks)db.mocks=[]; if(!db.settings)db.settings={hours:8};
+function save(){localStorage.setItem("cgl2027",JSON.stringify(db));}
+function today(){return new Date().toISOString().slice(0,10);}
+function addDays(s,n){var d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function nextSunday(s){var d=new Date(s+"T12:00:00"),n=(7-d.getDay())%7;if(n===0)n=7;d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch];});}
+function totalTopics(){return db.topics.length;}
+function completedTopics(){return db.topics.filter(function(x){return x.status==="Completed";}).length;}
+function syllabusPct(){return Math.round(completedTopics()/totalTopics()*100);}
+function totalMinutes(){return db.study.reduce(function(a,x){return a+Number(x.minutes||0);},0);}
+function mockUnlocked(){return syllabusPct()>=50;}
+function revisions(){var t=today(),a=[];db.topics.forEach(function(x){if(x.weekly&&!x.weeklyDone)a.push({x:x,type:"Weekly",date:x.weekly,over:x.weekly<=t});if(x.monthly&&!x.monthlyDone)a.push({x:x,type:"Monthly",date:x.monthly,over:x.monthly<=t});});return a.sort(function(a,b){return a.date.localeCompare(b.date);});}
+function readiness(){var a=db.topics.filter(function(x){return x.acc!=null;}),avg=a.length?a.reduce(function(s,x){return s+Number(x.acc);},0)/a.length:0,h=Math.min(totalMinutes()/30000,1),c=Math.min(db.study.filter(function(x){return Number(x.minutes||0)>=60;}).length/90,1),m=Math.min(db.mocks.length/30,1);return Math.round(syllabusPct()*.35+h*15+(avg/100)*25+m*15+c*10);}
+function heat(){var out="";for(var i=139;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var day=d.toISOString().slice(0,10),m=db.study.filter(function(x){return x.date===day;}).reduce(function(a,x){return a+Number(x.minutes||0);},0),l=m>=480?4:m>=240?3:m>=60?2:m?1:0;out+="<div class='day l"+l+"' title='"+day+"'></div>";}return out;}
+var labels={dashboard:"🏠 Dashboard",planner:"🗓️ Planner",syllabus:"📚 Syllabus",study:"⏱️ Study Log",revision:"🔁 Revision",pyq:"📝 PYQ",mocks:"🎯 Mocks",analytics:"📊 Analytics",backup:"💾 Backup"};
+nav.innerHTML=Object.keys(labels).map(function(k){return "<button data-p="+k+">"+labels[k]+"</button>";}).join("");
+nav.addEventListener("click",function(e){if(e.target.dataset.p)location.hash=e.target.dataset.p;});
+window.addEventListener("hashchange",render);
+
+function render(){var p=location.hash.slice(1)||"dashboard";document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("active",b.dataset.p===p);});var fn={dashboard:dashboard,planner:planner,syllabus:syllabus,study:study,revision:revision,pyq:pyq,mocks:mocks,analytics:analytics,backup:backup}[p]||dashboard;fn(page);}
+
+function consistencyStats(){
+  var current=0,d=new Date();
+  while(true){
+    var s=d.toISOString().slice(0,10);
+    var m=db.study.filter(function(x){return x.date===s;}).reduce(function(a,x){return a+Number(x.minutes||0);},0);
+    if(m<=0)break;
+    current++;d.setDate(d.getDate()-1);
+    if(current>999)break;
+  }
+  var best=0,run=0,seen={};
+  db.study.forEach(function(x){seen[x.date]=true;});
+  var dates=Object.keys(seen).sort();
+  for(var i=0;i<dates.length;i++){
+    if(i===0){run=1;}else{
+      var prev=new Date(dates[i-1]+"T12:00:00"),cur=new Date(dates[i]+"T12:00:00");
+      var gap=Math.round((cur-prev)/86400000);
+      run=gap===1?run+1:1;
+    }
+    if(run>best)best=run;
+  }
+  var wstart=new Date();wstart.setDate(wstart.getDate()-wstart.getDay());wstart.setHours(0,0,0,0);
+  var weekM=db.study.filter(function(x){return new Date(x.date+"T12:00:00")>=wstart;}).reduce(function(a,x){return a+Number(x.minutes||0);},0);
+  return {current:current,best:best,weekM:weekM};
+}
+function dashboard(p){
+  var r=revisions(),w=db.topics.filter(function(x){return x.acc!=null&&x.acc<70;}).sort(function(a,b){return a.acc-b.acc;}).slice(0,5);
+  var cs=consistencyStats(),weekTarget=7*8*60,weekPct=Math.min(100,Math.round(cs.weekM/weekTarget*100));
+  var message=cs.current>=30?"🔥 30+ days. You're building an exam-ready habit.":cs.current>=14?"🚀 Two weeks strong. Keep the chain alive.":cs.current>=7?"💪 One week down. Make the next one stronger.":cs.current>=3?"⚡ Momentum is building. Don't break it today.":"🌱 Start the streak today. One focused day is enough to begin.";
+  p.innerHTML="<div class='topline'><div><h1>SSC CGL Tracker 2027</h1><p class='muted page-sub'>Your preparation command center • 8 hours/day • Sunday revision • full mocks after 50%</p></div><div class='topmeta'><span class='badge'>📅 "+new Date(today()+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})+"</span></div></div>"+
+  "<div class='card section' style='background:linear-gradient(135deg,#14294a,#101f37 58%,#17264a);border-color:#415f92'><div class='topline'><div><div class='kicker'>🔥 CONSISTENCY JOURNEY</div><div style='font-size:24px;font-weight:850;margin-top:5px'>"+message+"</div><div class='muted' style='margin-top:5px'>Show up today. Your future score is built one day at a time.</div></div><div class='topmeta'><span class='badge' style='font-size:14px;padding:7px 11px'>🔥 "+cs.current+" day streak</span><span class='badge'>🏆 Best: "+cs.best+" days</span></div></div>"+
+  "<div class='grid two' style='margin-top:15px'><div><div class='row' style='border-bottom:0;padding:0 0 8px'><b>This week's 56-hour goal</b><span class='badge'>"+Math.round(cs.weekM/60*10)/10+" / 56h</span></div><div class='bar'><i style='width:"+weekPct+"%'></i></div><div class='muted' style='font-size:12px;margin-top:7px'>"+weekPct+"% of your weekly study target • every logged session counts.</div></div><div class='notice' style='border-left-color:#8ba5ff'><b>Today's challenge</b><br><span class='muted'>Complete your fixed routine, tick the blocks, and protect your streak.</span></div></div></div>"+
+  "<div class='grid cards section'><div class=card><div class=kicker>READINESS</div><div class=big>"+readiness()+"%</div><div class=bar><i style='width:"+readiness()+"%'></i></div></div>"+
+  "<div class=card><div class=kicker>SYLLABUS</div><div class=big>"+syllabusPct()+"%</div><div class=muted>"+completedTopics()+"/"+totalTopics()+" topics</div></div>"+
+  "<div class=card><div class=kicker>STUDY HOURS</div><div class=big>"+Math.round(totalMinutes()/60)+"</div><div class=muted'>total logged</div></div>"+
+  "<div class=card><div class=kicker>REVISION QUEUE</div><div class=big>"+r.length+"</div><div class=muted>"+r.filter(function(x){return x.over;}).length+" overdue</div></div></div>"+
+  "<div class='grid two section'><div class=card><h2>⚠️ Weak Topics</h2>"+(w.length?"<table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+w.map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class=bad>"+x.acc+"%</td></tr>";}).join("")+"</table>":"<div class=muted>Log PYQ accuracy to detect weak chapters.</div>")+"</div>"+
+  "<div class=card><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.type+"</span></div>";}).join("")||"<div class=good>Revision queue clear.</div>")+"</div></div>"+
+  "<div class=card style='margin-top:18px'><div class='row' style='border-bottom:0'><div><div class='kicker'>YOUR STUDY HEATMAP</div><h2 style='margin:4px 0 0'>🔥 Keep the chain alive</h2></div><span class='badge'>Last 140 days</span></div><div class=heat style='margin-top:12px'>"+heat()+"</div><div class='muted' style='margin-top:10px;font-size:12px'>Each square is a day. More study time = stronger intensity.</div></div>";
+}
+function heat(){var out="";for(var i=139;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var day=d.toISOString().slice(0,10),m=db.study.filter(function(x){return x.date===day;}).reduce(function(a,x){return a+Number(x.minutes||0);},0),l=m>=480?4:m>=240?3:m>=60?2:m?1:0;out+="<div class='day l"+l+"' title='"+day+"'></div>";}return out;}
+var labels={dashboard:"🏠 Dashboard",planner:"🗓️ Planner",syllabus:"📚 Syllabus",study:"⏱️ Study Log",revision:"🔁 Revision",pyq:"📝 PYQ",mocks:"🎯 Mocks",analytics:"📊 Analytics",backup:"💾 Backup"};
+nav.innerHTML=Object.keys(labels).map(function(k){return "<button data-p="+k+">"+labels[k]+"</button>";}).join("");
+nav.addEventListener("click",function(e){if(e.target.dataset.p)location.hash=e.target.dataset.p;});
+window.addEventListener("hashchange",render);
+
+function render(){var p=location.hash.slice(1)||"dashboard";document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("active",b.dataset.p===p);});var fn={dashboard:dashboard,planner:planner,syllabus:syllabus,study:study,revision:revision,pyq:pyq,mocks:mocks,analytics:analytics,backup:backup}[p]||dashboard;fn(page);}
+
+function dashboard(p){
+  var r=revisions(),w=db.topics.filter(function(x){return x.acc!=null&&x.acc<70;}).sort(function(a,b){return a.acc-b.acc;}).slice(0,5);
+  p.innerHTML="<h1>SSC CGL Tracker 2027</h1><p class=muted>8 hours/day • Sunday weekly revision • full mocks after 50%</p>"+
+  "<div class='grid cards'><div class=card><div class=muted>READINESS</div><div class=big>"+readiness()+"%</div><div class=bar><i style='width:"+readiness()+"%'></i></div></div>"+
+  "<div class=card><div class=muted>SYLLABUS</div><div class=big>"+syllabusPct()+"%</div><div class=muted>"+completedTopics()+"/"+totalTopics()+" topics</div></div>"+
+  "<div class=card><div class=muted>STUDY HOURS</div><div class=big>"+Math.round(totalMinutes()/60)+"</div><div class=muted>total logged</div></div>"+
+  "<div class=card><div class=muted>REVISION QUEUE</div><div class=big>"+r.length+"</div><div class=muted>"+r.filter(function(x){return x.over;}).length+" overdue</div></div></div>"+
+  "<div class='grid two' style='margin-top:14px'><div class=card><h2>⚠️ Weak Topics</h2>"+(w.length?"<table><tr><th>Subject</th><th>Topic</th><th>Accuracy</th></tr>"+w.map(function(x){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td class=bad>"+x.acc+"%</td></tr>";}).join("")+"</table>":"<div class=muted>Log PYQ accuracy to detect weak chapters.</div>")+
+  "</div><div class=card><h2>🔁 Next Revision</h2>"+(r.slice(0,7).map(function(x){return "<div class=row><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.type+"</span></div>";}).join("")||"<div class=good>Revision queue clear.</div>")+"</div></div>"+
+  "<div class=card style='margin-top:14px'><h2>🔥 Consistency</h2><div class=heat>"+heat()+"</div></div>";
+}
+function topicOptions(subject, selected){
+  var arr=S[subject]||[];
+  return arr.map(function(t){return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";}).join("");
+}
+function fixedTemplate(){
+  return [
+    {id:"ga",subject:"GA",start:"07:00",end:"09:00",minutes:120,type:"Study",topic:nextTopic("GA"),done:false,logged:false},
+    {id:"break1",subject:null,start:"09:00",end:"09:30",minutes:0,type:"Break",title:"🍳 Breakfast",done:false,logged:false},
+    {id:"quant",subject:"Quant",start:"09:30",end:"11:30",minutes:120,type:"Study",topic:nextTopic("Quant"),done:false,logged:false},
+    {id:"break2",subject:null,start:"11:30",end:"12:00",minutes:0,type:"Break",title:"☕ Break",done:false,logged:false},
+    {id:"reasoning",subject:"Reasoning",start:"12:00",end:"13:30",minutes:90,type:"Study",topic:nextTopic("Reasoning"),done:false,logged:false},
+    {id:"break3",subject:null,start:"13:30",end:"14:00",minutes:0,type:"Break",title:"🍱 Lunch",done:false,logged:false},
+    {id:"english",subject:"English",start:"14:00",end:"16:00",minutes:120,type:"Study",topic:nextTopic("English"),done:false,logged:false},
+    {id:"gym",subject:null,start:"16:00",end:"18:00",minutes:0,type:"Break",title:"🏋️ Gym / travel / recovery",done:false,logged:false},
+    {id:"break4",subject:null,start:"18:00",end:"18:30",minutes:0,type:"Break",title:"🚿 Shower + snack",done:false,logged:false},
+    {id:"recap",subject:null,start:"18:30",end:"19:00",minutes:30,type:"Recap",title:"Daily Recap — recall today's topics + mistakes",done:false,logged:false},
+    {id:"buffer",subject:null,start:"19:00",end:"20:00",minutes:0,type:"Break",title:"🧘 Buffer / plan tomorrow / free time",done:false,logged:false}
+  ];
+}
+function nextTopic(subject){
+  var x=db.topics.find(function(t){return t.s===subject&&t.status==="Learning";});
+  if(!x)x=db.topics.find(function(t){return t.s===subject&&t.status==="Not started";});
+  return x?x.topic:(S[subject]&&S[subject][0])||"Revision / practice";
+}
+function planForToday(){
+  var day=today();
+  if(!db.plans)db.plans={};
+  if(db.settings.plannerVersion!=="topic-select-v3"){
+    db.plans={};
+    db.settings.plannerVersion="topic-select-v3";
+    save();
+  }
+  if(!db.plans[day]){
+    db.plans[day]=fixedTemplate();
+    save();
+  }
+  return db.plans[day];
+}
+function planner(p){
+  var day=today(), sunday=new Date(day+"T12:00:00").getDay()===0, tasks=planForToday();
+  var studyMinutes=tasks.reduce(function(s,x){return s+x.minutes;},0);
+  var doneMinutes=tasks.filter(function(x){return x.done;}).reduce(function(s,x){return s+x.minutes;},0);
+  var target=480;
+  var remaining=Math.max(0,target-doneMinutes);
+  var dateText=new Date(day+"T12:00:00").toLocaleDateString("en-IN",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+  function label(x){
+    if(x.type==="Break")return x.title;
+    if(x.type==="Recap")return "🔄 "+(sunday?"Monthly Revision + Mistake Notebook":"Daily Recap — recall today's topics + mistakes");
+    return (sunday?"🔁 Weekly Revision — ":"📚 ")+x.subject;
+  }
+  var rows=tasks.map(function(x,i){
+    if(x.type==="Break"){
+      return "<div class='row' style='padding:11px 0;opacity:.72'><div><b>"+esc(x.title)+"</b><div class='muted' style='font-size:12px'>"+x.start+" – "+x.end+"</div></div><span class='badge'>BREAK</span></div>";
+    }
+    var selected=x.topic||"";
+    var selectHtml=x.subject?"<select class='plan-topic' data-i='"+i+"' style='max-width:360px'><option value=''>Select topic</option>"+topicOptions(x.subject,selected)+"</select>":"";
+    var checked=x.done?"checked":"";
+    return "<div class='row' style='padding:14px 0;gap:14px;align-items:flex-start'><div style='display:flex;gap:12px;min-width:0;flex:1'>"+
+      "<input class='plan-check' data-i='"+i+"' type='checkbox' "+checked+" style='width:19px;height:19px;margin-top:3px;accent-color:#83a1ff'>"+
+      "<div style='min-width:0;flex:1'><div style='font-weight:850'>"+esc(label(x))+"</div><div class='muted' style='font-size:12px;margin:2px 0 8px'>"+x.start+" – "+x.end+" • "+x.minutes+" min</div>"+selectHtml+"</div></div>"+
+      "<span class='badge'>"+(x.done?"✅ DONE":x.type.toUpperCase())+"</span></div>";
+  }).join("");
+  p.innerHTML="<div class='topline'><div><h1>Today's Study Plan</h1><p class='muted page-sub'>"+dateText+" • "+(sunday?"🔁 Sunday Revision Day":"📚 Study + Practice Day")+"</p></div>"+
+    "<div class='topmeta'><span class='badge'>🎯 8h focused target</span><span class='badge'>⏱️ Real breaks included</span></div></div>"+
+    "<div class='notice section'>"+(sunday?"<b class='warn'>Sunday mode:</b> choose the topics you want to revise for each subject. The evening block becomes monthly revision + mistakes.":"<b>Every morning:</b> choose exactly what you want to study in each subject dropdown, save the plan, then work through the day. Your selections stay saved for this date.")+"</div>"+
+    "<div class='grid cards section'><div class='card'><div class='kicker'>STUDY TARGET</div><div class='big'>8h</div><div class='muted'>7:00 AM → 7:00 PM focused window</div></div>"+
+    "<div class='card'><div class='kicker'>PLANNED STUDY</div><div class='big'>8h</div><div class='muted'>2h GA • 2h Quant • 1.5h Reasoning • 2h English • 0.5h recap</div></div>"+
+    "<div class='card'><div class='kicker'>COMPLETED</div><div class='big'>"+Math.round(doneMinutes/60*10)/10+"h</div><div class='bar'><i style='width:"+Math.min(100,doneMinutes/target*100)+"%'></i></div></div>"+
+    "<div class='card'><div class='kicker'>REMAINING</div><div class='big'>"+Math.round(remaining/60*10)/10+"h</div><div class='muted'>Based on completed blocks</div></div></div>"+
+    "<div class='grid two section'><div class='card'><div class='row' style='border-bottom:0'><h2>🗓️ Your Fixed Daily Routine</h2><span class='badge'>Choose topics ↓</span></div>"+rows+
+    "<div style='display:flex;gap:8px;margin-top:16px'><button id='savePlan' class='btn'>💾 Save Today's Plan</button><button id='resetPlan' class='btn alt'>↩ Reset Today's Choices</button></div></div>"+
+    "<div class='card'><h2>🧠 How this works</h2><div class='notice'><b>1. Pick topics</b><br>Select the exact topic you will study in GA, Quant, Reasoning and English.</div><div class='notice' style='margin-top:9px'><b>2. Save</b><br>The choices are stored only for today's date, so tomorrow you can make a different plan.</div><div class='notice' style='margin-top:9px'><b>3. Study + tick done</b><br>When you tick a block complete, the scheduled minutes and selected topic are added to your Study Log automatically.</div><div style='margin-top:12px' class='"+(mockUnlocked()?"good":"warn")+"'>"+(mockUnlocked()?"🎯 Full mocks are unlocked.":"🔒 Full mocks unlock automatically at 50% syllabus completion.")+"</div></div></div>";
+  p.querySelectorAll(".plan-topic").forEach(function(sel){
+    sel.addEventListener("change",function(){tasks[Number(sel.dataset.i)].topic=sel.value;});
+  });
+  p.querySelectorAll(".plan-check").forEach(function(box){
+    box.addEventListener("change",function(){
+      var task=tasks[Number(box.dataset.i)];
+      task.done=box.checked;
+      if(box.checked && !task.logged){
+        db.study.push({date:day,subject:task.subject||"Recap",minutes:task.minutes,topic:task.topic||task.title});
+        task.logged=true;
+      }
+      save();planner(p);
+    });
+  });
+  document.getElementById("savePlan").addEventListener("click",function(){save();p.querySelector("#savePlan").textContent="✅ Saved for today";setTimeout(function(){if(document.getElementById("savePlan"))document.getElementById("savePlan").textContent="💾 Save Today's Plan";},1200);});
+  document.getElementById("resetPlan").addEventListener("click",function(){if(confirm("Reset today's topic choices and completion checkboxes?")){delete db.plans[day];save();planner(p);}});
+}
+function syllabus(p){
+  p.innerHTML="<h1>Syllabus</h1><p class=muted>Complete a topic → weekly review on the next Sunday + monthly review 30 days later.</p><div class=card><table><tr><th>Subject</th><th>Topic</th><th>Status</th><th>Weekly</th><th>Monthly</th><th>PYQ</th></tr>"+
+  db.topics.map(function(x,i){return "<tr><td>"+x.s+"</td><td>"+esc(x.topic)+"</td><td><select class=status data-i="+i+"><option>Not started</option><option>Learning</option><option>Completed</option></select></td><td>"+(x.weeklyDone?"✅ ":"")+(x.weekly||"—")+"</td><td>"+(x.monthlyDone?"✅ ":"")+(x.monthly||"—")+"</td><td>"+(x.acc==null?"—":x.acc+"%")+"</td></tr>";}).join("")+"</table></div>";
+  p.querySelectorAll(".status").forEach(function(s){var i=Number(s.dataset.i);s.value=db.topics[i].status;s.addEventListener("change",function(){var x=db.topics[i],old=x.status;x.status=s.value;if(s.value==="Completed"&&old!=="Completed"){x.studied=today();x.weekly=nextSunday(x.studied);x.monthly=addDays(x.studied,30);x.weeklyDone=false;x.monthlyDone=false;}save();render();});});
+}
+function study(p){
+  var totalQ=db.study.reduce(function(s,x){return s+Number(x.questions||0);},0);
+  var totalM=db.study.reduce(function(s,x){return s+Number(x.minutes||0);},0);
+  p.innerHTML="<div class='topline'><div><h1>Study Log</h1><p class='muted page-sub'>Record what you actually studied — choose the date, subject and matching topic.</p></div>"+
+  "<div class='topmeta'><span class='badge'>📝 "+totalQ+" questions solved</span><span class='badge'>⏱️ "+Math.round(totalM/60*10)/10+"h studied</span></div></div>"+
+  "<div class='card section'><form id='studyForm'>"+
+  "<div class='grid two'><label class='muted'>Study date<input id='studyDate' name='date' type='date' value='"+today()+"' required><span style='display:block;margin-top:5px;font-size:12px'>You can select an earlier date if you forgot to log a previous study session.</span></label>"+
+  "<label class='muted'>Subject<select id='studySubject' name='subject'>"+Object.keys(S).map(function(s){return "<option>"+s+"</option>";}).join("")+"</select></label></div>"+
+  "<label class='muted'>Topic<select id='studyTopic' name='topic'><option value=''>Select a topic</option></select></label>"+
+  "<div class='grid two'><label class='muted'>Study minutes<input name='minutes' type='number' min='1' placeholder='e.g. 120' required></label><label class='muted'>Questions solved<input name='questions' type='number' min='0' placeholder='e.g. 50'></label></div>"+
+  "<button class='btn' type='submit'>+ Add Study</button></form></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><h2>📚 Study History</h2><span class='badge'>Date can be backdated</span></div>"+
+  (db.study.length?"<table><tr><th>Date</th><th>Subject</th><th>Topic</th><th>Minutes</th><th>Questions</th></tr>"+
+  db.study.slice().reverse().map(function(x){return "<tr><td>"+esc(x.date)+"</td><td>"+esc(x.subject)+"</td><td>"+esc(x.topic||"—")+"</td><td>"+Number(x.minutes||0)+"</td><td><b>"+Number(x.questions||0)+"</b></td></tr>";}).join("")+
+  "</table>":"<div class='empty'>No study sessions logged yet.</div>")+"</div>";
+
+  var subject=document.getElementById("studySubject"),topic=document.getElementById("studyTopic"),form=document.getElementById("studyForm");
+  function refreshStudyTopics(){
+    topic.innerHTML="<option value=''>Select a topic</option>"+(S[subject.value]||[]).map(function(t){return "<option value='"+esc(t)+"'>"+esc(t)+"</option>";}).join("");
+  }
+  subject.addEventListener("change",refreshStudyTopics);
+  refreshStudyTopics();
+
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var f=new FormData(e.target);
+    if(!f.get("topic")){alert("Please select the topic you studied.");return;}
+    db.study.push({
+      date:f.get("date"),
+      subject:f.get("subject"),
+      minutes:Number(f.get("minutes")||0),
+      questions:Number(f.get("questions")||0),
+      topic:f.get("topic")
+    });
+    save();render();
+  });
+}function revision(p){
+  var r=revisions();
+  var weekly=r.filter(function(x){return x.type==="Weekly";});
+  var monthly=r.filter(function(x){return x.type==="Monthly";});
+  p.innerHTML="<div class='topline'><div><h1>Revision Center</h1><p class='muted page-sub'>Your long-term retention system — every completed topic gets a Sunday review and a 30-day monthly review.</p></div><div class='topmeta'><span class='badge'>🔁 Sunday weekly</span><span class='badge'>📅 30-day monthly</span></div></div>"+
+    "<div class='grid two section'>"+
+      "<div class='card'><div class='row' style='border-bottom:0'><h2>🔁 Weekly Revision</h2><span class='badge'>"+weekly.filter(function(x){return x.over;}).length+" overdue</span></div>"+
+      (weekly.length?weekly.map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join(""):"<div class='empty'>No weekly revisions are waiting.</div>")+
+      "</div>"+
+      "<div class='card'><div class='row' style='border-bottom:0'><h2>📅 Monthly Revision</h2><span class='badge'>"+monthly.filter(function(x){return x.over;}).length+" overdue</span></div>"+
+      (monthly.length?monthly.map(function(x){return "<div class='row'><span>"+x.x.s+" • "+esc(x.x.topic)+"</span><span class="+(x.over?"bad":"warn")+">"+x.date+"</span></div>";}).join(""):"<div class='empty'>No monthly revisions are waiting.</div>")+
+      "</div>"+
+    "</div>"+
+    "<div class='card section'><div id='calendarBox'>"+calendarHtml()+"</div></div>";
+  var box=document.getElementById("calendarBox");
+  box.querySelectorAll("[data-cal-nav]").forEach(function(b){b.addEventListener("click",function(){calendarCursor+=Number(b.dataset.calNav);revision(p);});});
+  box.querySelectorAll("[data-jump-today]").forEach(function(b){b.addEventListener("click",function(){var d=new Date();calendarCursor=d.getFullYear()*12+d.getMonth();revision(p);});});
+}
+var calendarCursor=(new Date().getFullYear()*12+new Date().getMonth());
+function calendarHtml(){
+  var y=Math.floor(calendarCursor/12),m=calendarCursor%12;
+  if(m<0){m+=12;y--;}
+  var first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),prevDays=new Date(y,m,0).getDate();
+  var monthName=first.toLocaleString("en-US",{month:"long"});
+  var todayDate=today(),out="<div class='calendar-wrap'><div class='calendar-head'><div><div class='month-title'>"+monthName+" "+y+"</div><div class='month-sub'>Revision calendar • Sunday is your dedicated weekly revision day</div></div><div class='cal-nav'><button class='icon-btn' data-cal-nav='-1' aria-label='Previous month'>‹</button><button class='icon-btn' data-jump-today>Today</button><button class='icon-btn' data-cal-nav='1' aria-label='Next month'>›</button></div></div>";
+  out+="<div class='weekdays'><div class='weekday'>Mon</div><div class='weekday'>Tue</div><div class='weekday'>Wed</div><div class='weekday'>Thu</div><div class='weekday'>Fri</div><div class='weekday'>Sat</div><div class='weekday'>Sun</div></div>";
+  var start=(first.getDay()+6)%7;
+  out+="<div class='calendar'>";
+  for(var i=start-1;i>=0;i--){var dn=prevDays-i;out+="<div class='cal muted-day'><div class='calnum'>"+dn+"</div></div>";}
+  for(var day=1;day<=days;day++){
+    var d=new Date(y,m,day,12),s=d.toISOString().slice(0,10),events=revisions().filter(function(x){return x.date===s;});
+    var cls="cal"+(s===todayDate?" today":"")+(d.getDay()===0?" sunday":"");
+    out+="<div class='"+cls+"'><div class='calnum'><span>"+day+"</span>"+(s===todayDate?"<span class='today-dot'></span>":"")+"</div>";
+    out+=events.map(function(x){return "<div class='event "+(x.type==="Monthly"?"monthly ":"")+(x.over?"overdue":"")+"'>"+x.type+" • "+esc(x.x.topic)+"</div>";}).join("");
+    out+="</div>";
+  }
+  var totalCells=start+days,end=totalCells%7===0?0:7-totalCells%7;
+  for(var j=1;j<=end;j++)out+="<div class='cal muted-day'><div class='calnum'>"+j+"</div></div>";
+  out+="</div><div class='calendar-legend'><span class='legend-item'><i class='legend-dot today'></i>Today</span><span class='legend-item'><i class='legend-dot'></i>Weekly</span><span class='legend-item'><i class='legend-dot monthly'></i>Monthly</span><span class='legend-item'><i class='legend-dot overdue'></i>Overdue</span></div></div>";
+  return out;
+}
+function pyq(p){
+  var selectedSubject=(db.pyqSubject&&S[db.pyqSubject])?db.pyqSubject:"Quant";
+  var rows=db.topics.filter(function(x){return x.totalQuestions!=null;}).sort(function(a,b){return (a.s+a.topic).localeCompare(b.s+b.topic);});
+  var totalAll=rows.reduce(function(s,x){return s+Number(x.totalQuestions||0);},0);
+  var rightAll=rows.reduce(function(s,x){return s+Number(x.right||0);},0);
+  var wrongAll=rows.reduce(function(s,x){return s+Number(x.wrong||0);},0);
+  var attemptedAll=rightAll+wrongAll;
+  var unattemptedAll=Math.max(0,totalAll-attemptedAll);
+  var accuracyAll=attemptedAll?Math.round(rightAll/attemptedAll*1000)/10:0;
+
+  p.innerHTML="<div class='topline'><div><h1>PYQ Tracker</h1><p class='muted page-sub'>Enter total, right and wrong. Unattempted is calculated automatically, and accuracy is based on attempted questions.</p></div>"+
+  "<div class='topmeta'><span class='badge'>📚 "+totalAll+" total</span><span class='badge'>📝 "+attemptedAll+" attempted</span><span class='badge'>⬜ "+unattemptedAll+" unattempted</span><span class='badge'>📊 "+accuracyAll+"% accuracy</span></div></div>"+
+  "<div class='card section'><form id='pyqForm'><div class='grid two'>"+
+  "<label class='muted'>Subject<select id='pyqSubject' name='subject'>"+Object.keys(S).map(function(s){return "<option value='"+esc(s)+"' "+(s===selectedSubject?"selected":"")+">"+s+"</option>";}).join("")+"</select></label>"+
+  "<label class='muted'>Topic<select id='pyqTopic' name='topic'></select></label></div>"+
+  "<div class='grid three'>"+
+  "<label class='muted'>Total Questions<input name='total' type='number' min='1' placeholder='e.g. 50' required></label>"+
+  "<label class='muted'>Right<input name='right' type='number' min='0' placeholder='e.g. 44' required></label>"+
+  "<label class='muted'>Wrong<input name='wrong' type='number' min='0' placeholder='e.g. 2' required></label></div>"+
+  "<div class='grid three'>"+
+  "<div class='notice' id='attemptedPreview'>Attempted: —</div>"+
+  "<div class='notice' id='unattemptedPreview'>Unattempted: —</div>"+
+  "<div class='notice' id='accPreview'>Accuracy: —</div></div>"+
+  "<button class='btn' type='submit'>Save PYQ Result</button></form></div>"+
+  "<div class='card section'><div class='row' style='border-bottom:0'><h2>📚 Topic-wise PYQ Performance</h2><span class='badge'>"+rows.length+" tracked topics</span></div>"+
+  (rows.length?"<table><tr><th>Subject</th><th>Topic</th><th>Total</th><th>Attempted</th><th>Right</th><th>Wrong</th><th>Unattempted</th><th>Accuracy</th></tr>"+
+  rows.map(function(x){
+    var total=Number(x.totalQuestions||0),right=Number(x.right||0),wrong=Number(x.wrong||0),attempted=right+wrong,unattempted=Math.max(0,total-attempted),a=attempted?Math.round(right/attempted*1000)/10:0;
+    return "<tr><td>"+esc(x.s)+"</td><td>"+esc(x.topic)+"</td><td>"+total+"</td><td>"+attempted+"</td><td class='good'>"+right+"</td><td class='bad'>"+wrong+"</td><td>"+unattempted+"</td><td class='"+(a<70?"bad":a<85?"warn":"good")+"'>"+a+"%</td></tr>";
+  }).join("")+"</table>":"<div class='empty'>No PYQ results saved yet.</div>")+"</div>";
+
+  var subj=document.getElementById("pyqSubject"),topic=document.getElementById("pyqTopic"),form=document.getElementById("pyqForm"),accPreview=document.getElementById("accPreview"),attemptedPreview=document.getElementById("attemptedPreview"),unattemptedPreview=document.getElementById("unattemptedPreview");
+  function refreshTopics(){
+    var s=subj.value;
+    topic.innerHTML=(S[s]||[]).map(function(t){return "<option value='"+esc(t)+"'>"+esc(t)+"</option>";}).join("");
+    var current=db.topics.find(function(x){return x.s===s&&x.topic===topic.value;});
+    if(current&&current.totalQuestions!=null){
+      form.total.value=current.totalQuestions;form.right.value=current.right||0;form.wrong.value=current.wrong||0;
+    }else{
+      form.total.value="";form.right.value="";form.wrong.value="";
+    }
+    updatePreview();
+  }
+  function updatePreview(){
+    var total=Number(form.total.value||0),right=Number(form.right.value||0),wrong=Number(form.wrong.value||0),attempted=right+wrong,unattempted=Math.max(0,total-attempted),a=attempted?Math.round(right/attempted*1000)/10:0;
+    attemptedPreview.innerHTML=total?"<b>Attempted:</b> "+attempted:"Attempted: —";
+    unattemptedPreview.innerHTML=total?"<b>Unattempted:</b> "+unattempted:"Unattempted: —";
+    if(total&&attempted>total){
+      accPreview.innerHTML="<span class='bad'>⚠️ Right + Wrong cannot exceed Total.</span>";
+    }else{
+      accPreview.innerHTML=attempted?"<b>Accuracy:</b> "+a+"%":"Accuracy: —";
+    }
+  }
+  subj.addEventListener("change",function(){db.pyqSubject=subj.value;save();refreshTopics();});
+  topic.addEventListener("change",refreshTopics);
+  ["total","right","wrong"].forEach(function(n){form[n].addEventListener("input",updatePreview);});
+  form.addEventListener("submit",function(e){
+    e.preventDefault();
+    var subject=subj.value,t=topic.value,total=Number(form.total.value||0),right=Number(form.right.value||0),wrong=Number(form.wrong.value||0),attempted=right+wrong;
+    if(!total||right<0||wrong<0||attempted>total){alert("Please make sure Right + Wrong is not greater than Total.");return;}
+    var x=db.topics.find(function(a){return a.s===subject&&a.topic===t;});
+    if(x){x.totalQuestions=total;x.right=right;x.wrong=wrong;x.acc=attempted?Math.round(right/attempted*1000)/10:0;}
+    db.pyqSubject=subject;save();render();
+  });
+  refreshTopics();
+}
+function mocks(p){
+  var ok=mockUnlocked();
+  p.innerHTML="<h1>Mock Tests</h1><div class=badge>"+(ok?"🎯 50% syllabus reached — full mocks enabled":"🔒 Full mocks unlock after 50% syllabus completion")+"</div>"+
+  (ok?"<div class=card style='margin-top:12px'><form id=mockForm><input name=date type=date value="+today()+" required><input name=name placeholder='Mock name' required><input name=score type=number placeholder='Score' required><input name=total type=number value=200><button class=btn>Add Mock</button></form></div>":"")+
+  "<div class=card style='margin-top:12px'><table><tr><th>Date</th><th>Mock</th><th>Score</th><th>%</th></tr>"+db.mocks.slice().reverse().map(function(x){return "<tr><td>"+x.date+"</td><td>"+esc(x.name)+"</td><td>"+x.score+"/"+x.total+"</td><td>"+Math.round(x.score/x.total*100)+"%</td></tr>";}).join("")+"</table></div>";
+  if(ok)document.getElementById("mockForm").addEventListener("submit",function(e){e.preventDefault();var f=new FormData(e.target);db.mocks.push({date:f.get("date"),name:f.get("name"),score:f.get("score"),total:f.get("total")});save();render();});
+}
+function analytics(p){
+  p.innerHTML="<h1>Analytics</h1><div class='grid cards'>"+Object.keys(S).map(function(s){var a=db.topics.filter(function(x){return x.s===s&&x.acc!=null;}).map(function(x){return Number(x.acc);}),v=a.length?Math.round(a.reduce(function(u,z){return u+z;},0)/a.length):0;return "<div class=card><div class=muted>"+s+"</div><div class=big>"+(v||"—")+(v?"%":"")+"</div><div class=bar><i style='width:"+v+"%'></i></div></div>";}).join("")+"</div>"+
+  "<div class=card style='margin-top:14px'><p>🔴 Weak: below 70% • 🟡 Needs work: 70–84% • 🟢 Strong: 85%+</p><p>🎯 Full mocks: after 50% syllabus completion.</p></div>";
+}
+function backup(p){
+  p.innerHTML="<h1>Backup & Settings</h1><div class=card><p class=muted>No paid cloud database. Your tracker lives in this browser.</p><button id=export class=btn>Export JSON Backup</button><input id=import type=file accept=.json><button id=restore class=btn>Restore Backup</button><p><label>Daily target hours <input id=hours type=number min=1 max=24 value="+db.settings.hours+"></label><button id=saveHours class=btn>Save</button></p></div>";
+  document.getElementById("export").onclick=exportDB;document.getElementById("restore").onclick=importDB;document.getElementById("saveHours").onclick=function(){db.settings.hours=Number(document.getElementById("hours").value)||8;save();render();};
+}
+function exportDB(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="ssc-cgl-2027-backup-"+today()+".json";a.click();}
+function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{db=JSON.parse(r.result);save();render();alert("Backup restored.");}catch(e){alert("Invalid backup file.");}};r.readAsText(f);}
+render();
+</script></body></html>
