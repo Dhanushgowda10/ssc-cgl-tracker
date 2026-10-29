@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SSC CGL Tracker 2027</title>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MyTrack — Aspirant Study Tracker</title>
 <style>
 :root{
   --bg:#07101d;--bg2:#0b1628;--panel:#101d33;--panel2:#142540;--line:#273c60;
@@ -55,42 +55,89 @@ form{display:grid;gap:8px}.btn{background:linear-gradient(135deg,#88a5ff,#708ee9
 </style><style>.cloud-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cloud-card{background:linear-gradient(145deg,#142a49,#0e1d33 72%);border-color:#486a9e}.cloud-status{padding:12px 14px;background:#0b1729;border:1px solid #294465;border-radius:10px;margin-top:12px}.cloud-actions{display:flex;gap:8px;flex-wrap:wrap}.cloud-help{font-size:12px;color:var(--muted);line-height:1.55}@media(max-width:850px){.cloud-grid{grid-template-columns:1fr}}</style><style>
 .cloud-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cloud-card{background:linear-gradient(145deg,#142a49,#0e1d33 72%);border-color:#486a9e}.cloud-status{padding:12px 14px;background:#0b1729;border:1px solid #294465;border-radius:10px;margin-top:12px}.cloud-actions{display:flex;gap:8px;flex-wrap:wrap}.cloud-help{font-size:12px;color:var(--muted);line-height:1.55}.cloud-danger{font-size:12px;color:#ffb4c1}@media(max-width:850px){.cloud-grid{grid-template-columns:1fr}}
 </style><script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script></head>
-<body><div class="app"><aside><div class="brand">SSC CGL <span>2027</span></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
+<body><div class="app"><aside><div class="brand">MyTrack <span>ASPIRANT</span></div><div id="examSwitcher" class="exam-switcher"></div><nav id="nav"></nav></aside><main><div id="page"></div></main></div>
 <script>
-const S = {
-  Quant: ["Number System","Percentage","Ratio & Proportion","Average","Profit & Loss","Simple & Compound Interest","Time & Work","Time, Speed & Distance","Algebra","Geometry","Mensuration","Trigonometry","Data Interpretation"],
-  English: ["Noun","Pronoun","Verb","Adjective","Adverb","Articles","Prepositions","Tenses","Voice","Narration","Error Detection","Synonyms & Antonyms","One Word Substitution","Idioms & Phrases","Cloze Test","Reading Comprehension"],
-  Reasoning: ["Analogy","Classification","Series","Coding-Decoding","Blood Relations","Direction Sense","Venn Diagrams","Syllogism","Statement & Conclusion","Ranking","Non-Verbal Reasoning","Mirror & Water Image","Paper Folding","Embedded Figures"],
-  GA: ["Ancient History","Medieval History","Modern History","Indian Polity","Geography","Economics","General Science","Physics","Chemistry","Biology","Static GK","Current Affairs"]
+var APP_NAME="MyTrack",STORAGE_KEY="mytrack_v1",LEGACY_STORAGE_KEY="cgl2027";
+var FIREBASE_CONFIG_KEY="mytrack_firebase_config",LEGACY_FIREBASE_CONFIG_KEY="cgl2027_firebase_config";
+var FIREBASE_META_KEY="mytrack_firebase_meta",LEGACY_FIREBASE_META_KEY="cgl2027_firebase_meta";
+var DEFAULT_EXAM_ID="ssc-cgl-2027";
+var DEFAULT_SUBJECTS={
+  Quant:["Number System","Percentage","Ratio & Proportion","Average","Profit & Loss","Simple & Compound Interest","Time & Work","Time, Speed & Distance","Algebra","Geometry","Mensuration","Trigonometry","Data Interpretation"],
+  English:["Noun","Pronoun","Verb","Adjective","Adverb","Articles","Prepositions","Tenses","Voice","Narration","Error Detection","Synonyms & Antonyms","One Word Substitution","Idioms & Phrases","Cloze Test","Reading Comprehension"],
+  Reasoning:["Analogy","Classification","Series","Coding-Decoding","Blood Relations","Direction Sense","Venn Diagrams","Syllogism","Statement & Conclusion","Ranking","Non-Verbal Reasoning","Mirror & Water Image","Paper Folding","Embedded Figures"],
+  GA:["Ancient History","Medieval History","Modern History","Indian Polity","Geography","Economics","General Science","Physics","Chemistry","Biology","Static GK","Current Affairs"]
 };
-function makeTopics(){return Object.keys(S).flatMap(function(s){return S[s].map(function(topic){return {id:s+"|"+topic,s:s,topic:topic,status:"Not started",studied:null,weekly:null,monthly:null,weeklyDone:false,monthlyDone:false,acc:null};});});}
-let db;
-try{db=JSON.parse(localStorage.getItem("cgl2027")||"null");}catch(e){db=null;}
-if(!db || !Array.isArray(db.topics)){db={topics:makeTopics(),study:[],mocks:[],settings:{hours:8}};}
-if(!db.study)db.study=[]; if(!db.mocks)db.mocks=[]; if(!db.settings)db.settings={hours:8};
-
-
-var FIREBASE_CONFIG_KEY="cgl2027_firebase_config",FIREBASE_META_KEY="cgl2027_firebase_meta";
-var firebaseApp=null,firebaseAuth=null,firebaseStore=null,firebaseUser=null,firebaseAutoSync=false,firebaseSyncTimer=null,firebaseUnsubscribe=null,firebaseApplying=false,firebaseSyncBusy=false;
-
-function firebaseConfig(){try{return JSON.parse(localStorage.getItem(FIREBASE_CONFIG_KEY)||"null")||{};}catch(e){return {};}}
-function firebaseMeta(){try{return JSON.parse(localStorage.getItem(FIREBASE_META_KEY)||"null")||{};}catch(e){return {};}}
-function setFirebaseMeta(m){localStorage.setItem(FIREBASE_META_KEY,JSON.stringify(m||{}));}
-function firebaseUserReady(){return !!(firebaseAuth&&firebaseUser);}
-function saveFirebaseConfig(cfg){localStorage.setItem(FIREBASE_CONFIG_KEY,JSON.stringify(cfg||{}));}
-function ensureFirebase(){
-  if(!window.firebase)throw new Error("Firebase library could not load. Check your internet connection and refresh.");
-  var cfg=firebaseConfig();
-  if(!cfg.apiKey||!cfg.authDomain||!cfg.projectId||!cfg.appId)throw new Error("Enter all required Firebase Web App settings first.");
-  var expected=JSON.stringify(cfg);
-  if(firebaseApp&&firebaseApp.__cglConfig===expected)return firebaseApp;
-  try{firebaseApp=firebase.apps.find(function(a){return a.name==="cglTracker";})||null;}catch(e){firebaseApp=null;}
-  if(!firebaseApp)firebaseApp=firebase.initializeApp(cfg,"cglTracker");
-  firebaseApp.__cglConfig=expected;
-  firebaseAuth=firebase.auth(firebaseApp);
-  firebaseStore=firebase.firestore(firebaseApp);
-  return firebaseApp;
+var S={};
+function deepClone(x){return JSON.parse(JSON.stringify(x));}
+function makeTopicId(examId,subject,topic){return String(examId)+"|"+String(subject)+"|"+String(topic);}
+function makeTopicsFromSubjects(subjects,examId){
+  var out=[];
+  Object.keys(subjects||{}).forEach(function(s){
+    (subjects[s]||[]).forEach(function(topic){
+      out.push({id:makeTopicId(examId,s,topic),examId:examId,s:s,topic:topic,status:"Not started",studied:null,weekly:null,monthly:null,weeklyDone:false,monthlyDone:false,acc:null});
+    });
+  });
+  return out;
 }
+function defaultSettings(){
+  return {hours:8,mockUnlockPct:50,plannerVersion:"topic-select-v5",routineSubjects:Object.keys(DEFAULT_SUBJECTS).slice(0,4)};
+}
+function newExamProfile(id,name,subjects,target){
+  var subs=deepClone(subjects||{});
+  return {
+    id:id,name:name||"New Exam",code:"",description:"",subjects:subs,
+    topics:makeTopicsFromSubjects(subs,id),study:[],mocks:[],plans:{},revisionHistory:[],pyqAttempts:[],
+    settings:Object.assign(defaultSettings(),target||{})
+  };
+}
+function migrateLegacyDb(raw){
+  var ex=newExamProfile(DEFAULT_EXAM_ID,"SSC CGL 2027",DEFAULT_SUBJECTS,{hours:Number(raw&&raw.settings&&raw.settings.hours||8)});
+  var oldTopics=Array.isArray(raw&&raw.topics)?raw.topics:[];
+  var idMap={};
+  oldTopics.forEach(function(t){
+    var key=String(t.id||((t.s||"")+"|"+(t.topic||"")));
+    var nt=Object.assign({},t,{id:makeTopicId(DEFAULT_EXAM_ID,t.s,t.topic),examId:DEFAULT_EXAM_ID});
+    idMap[key]=nt.id;
+    ex.topics.push.apply(ex.topics,[]);
+  });
+  if(oldTopics.length){
+    ex.topics=oldTopics.map(function(t){
+      var key=String(t.id||((t.s||"")+"|"+(t.topic||"")));
+      idMap[key]=makeTopicId(DEFAULT_EXAM_ID,t.s,t.topic);
+      return Object.assign({},t,{id:idMap[key],examId:DEFAULT_EXAM_ID});
+    });
+  }
+  ex.study=Array.isArray(raw&&raw.study)?raw.study.map(function(x){return Object.assign({},x,{examId:DEFAULT_EXAM_ID,topicId:idMap[x.topicId]||makeTopicId(DEFAULT_EXAM_ID,x.subject,x.topic)});}):[];
+  ex.mocks=Array.isArray(raw&&raw.mocks)?raw.mocks.map(function(x){return Object.assign({},x,{examId:DEFAULT_EXAM_ID});}):[];
+  ex.plans=raw&&raw.plans?deepClone(raw.plans):{};
+  Object.keys(ex.plans).forEach(function(d){(ex.plans[d]||[]).forEach(function(t){t.examId=DEFAULT_EXAM_ID;});});
+  ex.revisionHistory=Array.isArray(raw&&raw.revisionHistory)?raw.revisionHistory.map(function(x){return Object.assign({},x,{examId:DEFAULT_EXAM_ID,topicId:idMap[x.topicId]||x.topicId});}):[];
+  ex.pyqAttempts=Array.isArray(raw&&raw.pyqAttempts)?raw.pyqAttempts.map(function(x){return Object.assign({},x,{examId:DEFAULT_EXAM_ID,topicId:idMap[x.topicId]||makeTopicId(DEFAULT_EXAM_ID,x.subject,x.topic)});}):[];
+  ex.settings=Object.assign(defaultSettings(),raw&&raw.settings||{});
+  if(!ex.settings.routineSubjects||!ex.settings.routineSubjects.length)ex.settings.routineSubjects=Object.keys(DEFAULT_SUBJECTS).slice(0,4);
+  ex.code="CGL";
+  ex.description="SSC Combined Graduate Level preparation";
+  return {version:2,activeExamId:DEFAULT_EXAM_ID,exams:{[DEFAULT_EXAM_ID]:ex}};
+}
+var db;
+try{
+  var stored=localStorage.getItem(STORAGE_KEY)||localStorage.getItem(LEGACY_STORAGE_KEY);
+  db=stored?JSON.parse(stored):null;
+}catch(e){db=null;}
+if(!db||!db.exams)db=migrateLegacyDb(db||{});
+S={};var firebaseApp=null,firebaseAuth=null,firebaseStore=null,firebaseUser=null,firebaseAutoSync=false,firebaseSyncTimer=null,firebaseUnsubscribe=null,firebaseApplying=false,firebaseSyncBusy=false;
+function firebaseConfig(){
+  try{
+    return JSON.parse(localStorage.getItem(FIREBASE_CONFIG_KEY)||localStorage.getItem(LEGACY_FIREBASE_CONFIG_KEY)||"null")||{};
+  }catch(e){return {};}
+}
+function firebaseMeta(){
+  try{
+    return JSON.parse(localStorage.getItem(FIREBASE_META_KEY)||localStorage.getItem(LEGACY_FIREBASE_META_KEY)||"null")||{};
+  }catch(e){return {};}
+}
+function setFirebaseMeta(m){localStorage.setItem(FIREBASE_META_KEY,JSON.stringify(m||{}));}
+function saveFirebaseConfig(cfg){localStorage.setItem(FIREBASE_CONFIG_KEY,JSON.stringify(cfg||{}));}
 function firebaseSetStatus(msg,cls){
   var el=document.getElementById("cloudStatus");
   if(el)el.innerHTML="<span class='"+(cls||"muted")+"'>"+esc(msg)+"</span>";
@@ -185,7 +232,7 @@ async function firebaseDownload(){
   var row=snap.data()||{};
   if(!row.data||!Array.isArray(row.data.topics))throw new Error("Cloud data is not a valid tracker backup.");
   if(!confirm("Download cloud data to this device? Current local data will be replaced. A safety copy will be kept in this browser."))return;
-  localStorage.setItem("cgl2027_firebase_pre_pull_backup",JSON.stringify(db));
+  localStorage.setItem("mytrack_firebase_pre_pull_backup",JSON.stringify(db));
   firebaseApplying=true;
   try{db=row.data;normalizeDb();save();}finally{firebaseApplying=false;}
   var ts=row.updatedAt&&row.updatedAt.toMillis?row.updatedAt.toMillis():Number(row.clientUpdatedAt||Date.now());
@@ -220,7 +267,67 @@ async function firebaseSyncNow(){
 }
 function firebaseAction(fn){return function(){fn().catch(function(e){firebaseSetStatus("⚠️ "+e.message,"bad");});};}
 
-function save(){localStorage.setItem("cgl2027",JSON.stringify(db));if(!firebaseApplying&&firebaseAutoSync&&firebaseUser){var m=firebaseMeta();m.localDirty=true;setFirebaseMeta(m);scheduleFirebasePush();}}
+function syncCurrentExamIntoBucket(){
+  if(!db.exams||!db.activeExamId)return;
+  var e=db.exams[db.activeExamId];
+  if(!e)return;
+  e.subjects=deepClone(S);
+  e.topics=deepClone(db.topics||[]);
+  e.study=deepClone(db.study||[]);
+  e.mocks=deepClone(db.mocks||[]);
+  e.plans=deepClone(db.plans||{});
+  e.revisionHistory=deepClone(db.revisionHistory||[]);
+  e.pyqAttempts=deepClone(db.pyqAttempts||[]);
+  e.settings=deepClone(db.settings||defaultSettings());
+}
+function loadExamIntoWorking(id){
+  var e=db.exams&&db.exams[id];
+  if(!e)return false;
+  S=deepClone(e.subjects||{});
+  db.topics=deepClone(e.topics||makeTopicsFromSubjects(S,id));
+  db.study=deepClone(e.study||[]);
+  db.mocks=deepClone(e.mocks||[]);
+  db.plans=deepClone(e.plans||{});
+  db.revisionHistory=deepClone(e.revisionHistory||[]);
+  db.pyqAttempts=deepClone(e.pyqAttempts||[]);
+  db.settings=Object.assign(defaultSettings(),deepClone(e.settings||{}));
+  db.activeExamId=id;
+  return true;
+}
+function normalizeExamBucket(e,id){
+  e.id=id;
+  e.name=e.name||"New Exam";
+  e.subjects=e.subjects&&typeof e.subjects==="object"?e.subjects:{};
+  e.topics=Array.isArray(e.topics)?e.topics:makeTopicsFromSubjects(e.subjects,id);
+  e.study=Array.isArray(e.study)?e.study:[];
+  e.mocks=Array.isArray(e.mocks)?e.mocks:[];
+  e.plans=e.plans&&typeof e.plans==="object"?e.plans:{};
+  e.revisionHistory=Array.isArray(e.revisionHistory)?e.revisionHistory:[];
+  e.pyqAttempts=Array.isArray(e.pyqAttempts)?e.pyqAttempts:[];
+  e.settings=Object.assign(defaultSettings(),e.settings||{});
+  e.topics.forEach(function(t){t.examId=id;t.id=makeTopicId(id,t.s,t.topic);});
+  var topicIds={};e.topics.forEach(function(t){topicIds[t.s+"|"+t.topic]=t.id;});
+  e.study.forEach(function(x,i){x.examId=id;if(!x.id)x.id=uid("study"+i);if(!x.sessionType)x.sessionType=x.type||"Manual";if(!x.type)x.type=x.sessionType||"Manual";if(!x.source)x.source="Manual";if(x.questions==null)x.questions=0;if(topicIds[x.subject+"|"+x.topic])x.topicId=topicIds[x.subject+"|"+x.topic];});
+  e.pyqAttempts.forEach(function(x,i){x.examId=id;if(!x.id)x.id=uid("pyq"+i);if(topicIds[x.subject+"|"+x.topic])x.topicId=topicIds[x.subject+"|"+x.topic];});
+  e.revisionHistory.forEach(function(x){x.examId=id;if(topicIds[x.subject+"|"+x.topic])x.topicId=topicIds[x.subject+"|"+x.topic];});
+  Object.keys(e.plans).forEach(function(d){(e.plans[d]||[]).forEach(function(t){t.examId=id;});});
+  e.mocks.forEach(function(x){x.examId=id;});
+}
+function normalizeDb(){
+  if(!db.exams||typeof db.exams!=="object")db=migrateLegacyDb(db||{});
+  var ids=Object.keys(db.exams);
+  if(!ids.length){db=migrateLegacyDb({});ids=Object.keys(db.exams);}
+  ids.forEach(function(id){normalizeExamBucket(db.exams[id],id);});
+  if(!db.activeExamId||!db.exams[db.activeExamId])db.activeExamId=ids[0];
+  loadExamIntoWorking(db.activeExamId);
+}
+function save(){
+  syncCurrentExamIntoBucket();
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
+  if(!firebaseApplying&&firebaseAutoSync&&firebaseUser){
+    var m=firebaseMeta();m.localDirty=true;setFirebaseMeta(m);scheduleFirebasePush();
+  }
+}
 function uid(prefix){return String(prefix||"id")+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);}
 function localISO(d){
   d=d||new Date();
@@ -228,24 +335,6 @@ function localISO(d){
   return y+"-"+m+"-"+day;
 }
 function today(){return localISO(new Date());}
-function normalizeDb(){
-  if(!db.study)db.study=[];
-  if(!db.mocks)db.mocks=[];
-  if(!db.settings)db.settings={hours:8};
-  if(!db.plans)db.plans={};
-  if(!db.revisionHistory)db.revisionHistory=[];
-  if(!db.pyqAttempts)db.pyqAttempts=[];
-  db.study.forEach(function(x,i){
-    if(!x.id)x.id=uid("study"+i);
-    if(!x.sessionType)x.sessionType=x.type||"Manual";
-    if(!x.type)x.type=x.sessionType||"Manual";
-    if(!x.source)x.source="Manual";
-    if(x.questions==null)x.questions=0;
-  });
-  db.pyqAttempts.forEach(function(x,i){if(!x.id)x.id=uid("pyq"+i);});
-}
-normalizeDb();
-save();
 function addDays(s,n){var d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function nextSunday(s){var d=new Date(s+"T12:00:00"),n=(7-d.getDay())%7;if(n===0)n=7;d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
 function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch];});}
@@ -253,16 +342,16 @@ function totalTopics(){return db.topics.length;}
 function completedTopics(){return db.topics.filter(function(x){return x.status==="Completed";}).length;}
 function syllabusPct(){return Math.round(completedTopics()/totalTopics()*100);}
 function totalMinutes(){return db.study.reduce(function(a,x){return a+Number(x.minutes||0);},0);}
-function mockUnlocked(){return syllabusPct()>=50;}
+function mockUnlocked(){return syllabusPct()>=Number(db.settings.mockUnlockPct==null?50:db.settings.mockUnlockPct);}
 function revisions(){var t=today(),a=[];db.topics.forEach(function(x){if(x.weekly&&!x.weeklyDone)a.push({x:x,type:"Weekly",date:x.weekly,over:x.weekly<=t});if(x.monthly&&!x.monthlyDone)a.push({x:x,type:"Monthly",date:x.monthly,over:x.monthly<=t});});return a.sort(function(a,b){return a.date.localeCompare(b.date);});}
 function readiness(){var a=db.topics.filter(function(x){return x.acc!=null;}),avg=a.length?a.reduce(function(s,x){return s+Number(x.acc);},0)/a.length:0,h=Math.min(totalMinutes()/30000,1),c=Math.min(db.study.filter(function(x){return Number(x.minutes||0)>=60;}).length/90,1),m=Math.min(db.mocks.length/30,1);return Math.round(syllabusPct()*.35+h*15+(avg/100)*25+m*15+c*10);}
 function heat(){var out="";for(var i=139;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);var day=d.toISOString().slice(0,10),m=db.study.filter(function(x){return x.date===day;}).reduce(function(a,x){return a+Number(x.minutes||0);},0),l=m>=480?4:m>=240?3:m>=60?2:m?1:0;out+="<div class='day l"+l+"' title='"+day+"'></div>";}return out;}
-var labels={dashboard:"🏠 Dashboard",planner:"🗓️ Planner",syllabus:"📚 Syllabus",study:"⏱️ Study Log",revision:"🔁 Revision",pyq:"📝 PYQ",mocks:"🎯 Mocks",analytics:"📊 Analytics",backup:"💾 Backup"};
+var labels={dashboard:"🏠 Dashboard",planner:"🗓️ Planner",syllabus:"📚 Syllabus",study:"⏱️ Study Log",revision:"🔁 Revision",pyq:"📝 PYQ",mocks:"🎯 Mocks",analytics:"📊 Analytics",exams:"🎓 My Exams",backup:"💾 Backup"};
 nav.innerHTML=Object.keys(labels).map(function(k){return "<button data-p="+k+">"+labels[k]+"</button>";}).join("");
 nav.addEventListener("click",function(e){if(e.target.dataset.p)location.hash=e.target.dataset.p;});
 window.addEventListener("hashchange",render);
 
-function render(){var p=location.hash.slice(1)||"dashboard";document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("active",b.dataset.p===p);});var fn={dashboard:dashboard,planner:planner,syllabus:syllabus,study:study,revision:revision,pyq:pyq,mocks:mocks,analytics:analytics,backup:backup}[p]||dashboard;fn(page);}
+function render(){var p=location.hash.slice(1)||"dashboard";document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("active",b.dataset.p===p);});var fn={dashboard:dashboard,planner:planner,syllabus:syllabus,study:study,revision:revision,pyq:pyq,mocks:mocks,analytics:analytics,exams:exams,backup:backup}[p]||dashboard;fn(page);}
 
 
 function consistencyStats(){
@@ -313,7 +402,7 @@ function dashboard(p){
     }).join("");
   }
 
-  p.innerHTML="<div class='topline'><div><h1>SSC CGL Tracker 2027</h1><p class='muted page-sub'>Your preparation command center • 8 hours/day • Sunday revision • full mocks after 50%</p></div><div class='topmeta'><span class='badge'>📅 "+new Date(today()+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})+"</span></div></div>"+
+  p.innerHTML="<div class='topline'><div><h1>"+esc(activeExamName())+"</h1><p class='muted page-sub'>Your preparation command center • "+Number(db.settings.hours||8)+" hours/day • revision • mocks after "+Number(db.settings.mockUnlockPct==null?50:db.settings.mockUnlockPct)+"%</p></div><div class='topmeta'><span class='badge'>📅 "+new Date(today()+"T12:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})+"</span></div></div>"+
   "<div class='card section' style='background:linear-gradient(135deg,#172d50,#0f1f37 55%,#142442);border-color:#45689c;box-shadow:0 20px 55px #0006'><div class='row' style='border-bottom:0;align-items:flex-start'><div><div class='kicker'>🔥 CONSISTENCY COMMAND CENTER</div><div style='font-size:25px;font-weight:900;margin-top:6px'>"+headline+"</div><div class='muted' style='margin-top:5px'>Your goal is simple: show up today, then repeat it tomorrow.</div></div><div style='text-align:right'><div style='font-size:35px;font-weight:900;line-height:1'>🔥 "+cs.current+"</div><div class='muted' style='font-size:12px'>day streak</div></div></div>"+
   "<div class='grid cards' style='margin-top:17px'><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>BEST STREAK</div><div class='big'>🏆 "+cs.best+" days</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>THIS WEEK</div><div class='big'>"+Math.round(cs.weekMinutes/60*10)/10+"h / 56h</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>ACTIVE DAYS</div><div class='big'>"+cs.activeDays+" / 7</div></div><div class='card' style='box-shadow:none;background:#0d1a2e'><div class='kicker'>WEEKLY GOAL</div><div class='big'>"+weekPct+"%</div><div class='bar'><i style='width:"+weekPct+"%'></i></div></div></div>"+
   "<div class='notice' style='margin-top:15px;border-left-color:#8aa7ff'><b>🎯 Today's challenge:</b> complete your planned study blocks before the day ends. A missed day breaks the streak; a completed day keeps it alive.</div>"+
@@ -358,6 +447,94 @@ function streakBoxes(){
     "<div class='streak-legend'><span>Less</span><i class='streak-s l0'></i><i class='streak-s l1'></i><i class='streak-s l2'></i><i class='streak-s l3'></i><i class='streak-s l4'></i><span>8h+</span></div>";
 }
 
+
+function getActiveExam(){return db.exams&&db.exams[db.activeExamId]?db.exams[db.activeExamId]:null;}
+function activeExamName(){var e=getActiveExam();return e?e.name:"MyTrack";}
+function activeExamCode(){var e=getActiveExam();return e&&e.code?e.code:"";}
+function refreshExamSwitcher(){
+  var box=document.getElementById("examSwitcher");if(!box||!db.exams)return;
+  var ids=Object.keys(db.exams);
+  box.innerHTML="<div class='exam-switcher-label'>ACTIVE EXAM</div><select id='examQuickSelect'>"+ids.map(function(id){var e=db.exams[id];return "<option value='"+esc(id)+"' "+(id===db.activeExamId?"selected":"")+">"+esc(e.name)+"</option>";}).join("")+"</select>";
+  document.getElementById("examQuickSelect").addEventListener("change",function(){switchExam(this.value);});
+}
+function switchExam(id){
+  if(!db.exams[id]||id===db.activeExamId)return;
+  syncCurrentExamIntoBucket();
+  loadExamIntoWorking(id);
+  save();
+  refreshExamSwitcher();
+  updateAppChrome();
+  location.hash="dashboard";
+  render();
+}
+function updateAppChrome(){
+  document.title=APP_NAME+" — "+activeExamName();
+  var brand=document.querySelector(".brand");
+  if(brand)brand.innerHTML="MyTrack <span>ASPIRANT</span>";
+  refreshExamSwitcher();
+}
+function parseTopicText(text){return String(text||"").split(/[\n,]+/).map(function(x){return x.trim();}).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i;});}
+function examSubjectEditorRow(subject,topics,i){
+  return "<div class='exam-subject-editor' data-i='"+i+"'><div class='grid two'><label class='muted'>Subject name<input class='exam-subject-name' value='"+esc(subject||"")+"' placeholder='e.g. Quantitative Aptitude'></label><button class='btn alt exam-remove-subject' type='button' data-i='"+i+"'>Remove subject</button></div><label class='muted'>Topics / chapters <textarea class='exam-topic-list' rows='4' placeholder='One topic per line or comma-separated'>"+esc((topics||[]).join("\n"))+"</textarea></label></div>";
+}
+function exams(p){
+  var ids=Object.keys(db.exams||{}),current=getActiveExam();
+  if(!current)return;
+  var rows=ids.map(function(id){var e=db.exams[id],t=(e.topics||[]).length;return "<div class='row'><div><b>"+esc(e.name)+"</b><div class='muted' style='font-size:12px'>"+esc(e.code||"Custom exam")+" • "+t+" topics • "+Number((e.settings&&e.settings.hours)||8)+"h target</div></div><button class='btn alt exam-select' data-id='"+esc(id)+"'>"+(id===db.activeExamId?"Active":"Switch")+"</button></div>";}).join("");
+  var subjects=Object.keys(current.subjects||{});
+  p.innerHTML="<div class='topline'><div><h1>My Exams</h1><p class='muted page-sub'>Build a separate preparation workspace for every exam you are targeting.</p></div><div class='topmeta'><span class='badge'>🎓 "+ids.length+" exam profile"+(ids.length===1?"":"s")+"</span><span class='badge'>📚 "+current.topics.length+" topics in active exam</span></div></div>"+
+  "<div class='grid two section'><div class='card'><div class='kicker'>ACTIVE EXAM</div><h2 style='margin:4px 0 0'>"+esc(current.name)+"</h2><p class='muted'>Switching exams keeps the study log, syllabus, PYQs, revisions, mocks and planner data separated.</p>"+rows+"</div>"+
+  "<div class='card'><div class='kicker'>CREATE / EDIT PROFILE</div><div class='grid two'><label class='muted'>Exam name<input id='examName' value='"+esc(current.name)+"' placeholder='e.g. UPSC CSE 2027'></label><label class='muted'>Short code<input id='examCode' value='"+esc(current.code||"")+"' placeholder='e.g. UPSC'></label></div><label class='muted'>Description<input id='examDescription' value='"+esc(current.description||"")+"' placeholder='What are you preparing for?'></label><div class='grid three'><label class='muted'>Daily target hours<input id='examHours' type='number' min='1' max='24' step='0.5' value='"+Number((current.settings&&current.settings.hours)||8)+"'></label><label class='muted'>Mock unlock %<input id='mockUnlockPct' type='number' min='0' max='100' value='"+Number((current.settings&&current.settings.mockUnlockPct)||50)+"'></label><label class='muted'>Planner subjects<input id='routineSubjects' value='"+esc(((current.settings&&current.settings.routineSubjects)||Object.keys(current.subjects||{}).slice(0,4)).join(", "))+"' placeholder='Subject 1, Subject 2, Subject 3'></label></div><div id='examSubjectsEditor'>"+subjects.map(function(s,i){return examSubjectEditorRow(s,current.subjects[s],i);}).join("")+"</div><div class='study-form-actions' style='margin-top:10px'><button id='addExamSubject' class='btn alt' type='button'>+ Add subject</button><button id='saveExamProfile' class='btn' type='button'>💾 Save Exam Profile</button><button id='newExamProfile' class='btn alt' type='button'>＋ New Blank Exam</button></div></div></div>"+
+  "<div class='notice section'>💡 <b>Customization:</b> subjects and topics are completely editable. You can use MyTrack for SSC, UPSC, banking, railways, state PSC, teaching, entrance exams, or your own study plan.</div>"+
+  "<div class='card section'><div class='kicker'>DANGER ZONE</div><p class='muted'>Deleting an exam removes its cloud/local workspace from the current tracker. Export a JSON backup first.</p><button id='deleteExamProfile' class='btn alt danger-btn' type='button' "+(ids.length<2?"disabled":"")+">Delete active exam</button></div>";
+  function collectSubjects(){
+    var map={},ok=true;
+    p.querySelectorAll(".exam-subject-editor").forEach(function(row){
+      var name=row.querySelector(".exam-subject-name").value.trim(),topics=parseTopicText(row.querySelector(".exam-topic-list").value);
+      if(!name){ok=false;return;}
+      if(map[name]){ok=false;return;}
+      map[name]=topics;
+    });
+    if(!ok)throw new Error("Each subject needs a unique name.");
+    return map;
+  }
+  function saveProfile(){
+    var id=db.activeExamId,old=current,newSubjects=collectSubjects(),oldByKey={};
+    (old.topics||[]).forEach(function(t){oldByKey[t.s+"|"+t.topic]=t;});
+    var newTopics=makeTopicsFromSubjects(newSubjects,id).map(function(t){return oldByKey[t.s+"|"+t.topic]?Object.assign({},oldByKey[t.s+"|"+t.topic],t):t;});
+    db.topics=newTopics;S=deepClone(newSubjects);
+    db.settings.hours=Number(document.getElementById("examHours").value)||8;
+    db.settings.mockUnlockPct=Math.max(0,Math.min(100,Number(document.getElementById("mockUnlockPct").value)||50));
+    db.settings.routineSubjects=parseTopicText(document.getElementById("routineSubjects").value);
+    db.settings.plannerVersion="topic-select-v5";
+    db.exams[id].name=document.getElementById("examName").value.trim()||"Untitled Exam";
+    db.exams[id].code=document.getElementById("examCode").value.trim();
+    db.exams[id].description=document.getElementById("examDescription").value.trim();
+    save();updateAppChrome();render();alert("Exam profile saved.");
+  }
+  p.querySelectorAll(".exam-select").forEach(function(b){b.addEventListener("click",function(){switchExam(b.dataset.id);});});
+  document.getElementById("addExamSubject").addEventListener("click",function(){var wrap=document.getElementById("examSubjectsEditor");wrap.insertAdjacentHTML("beforeend",examSubjectEditorRow("New Subject",[],wrap.querySelectorAll(".exam-subject-editor").length));bindSubjectRemovers();});
+  function bindSubjectRemovers(){p.querySelectorAll(".exam-remove-subject").forEach(function(b){b.onclick=function(){b.closest(".exam-subject-editor").remove();};});}
+  bindSubjectRemovers();
+  document.getElementById("saveExamProfile").addEventListener("click",function(){try{saveProfile();}catch(e){alert(e.message);}});
+  document.getElementById("newExamProfile").addEventListener("click",function(){newExam();});
+  document.getElementById("deleteExamProfile").addEventListener("click",function(){deleteExam();});
+}
+function newExam(){
+  var id="exam-"+Date.now(),e=newExamProfile(id,"New Exam",{"Subject 1":[],"Subject 2":[],"Subject 3":[]},{"hours":6,mockUnlockPct:0,routineSubjects:["Subject 1","Subject 2","Subject 3"]});
+  db.exams[id]=e;
+  syncCurrentExamIntoBucket();
+  loadExamIntoWorking(id);save();updateAppChrome();location.hash="exams";render();
+}
+function deleteExam(){
+  var ids=Object.keys(db.exams||{});
+  if(ids.length<2){alert("Keep at least one exam profile.");return;}
+  var current=getActiveExam();
+  if(!confirm("Delete "+current.name+"? This removes that exam's local/cloud workspace from this tracker."))return;
+  delete db.exams[db.activeExamId];
+  var next=Object.keys(db.exams)[0];
+  loadExamIntoWorking(next);save();updateAppChrome();location.hash="exams";render();
+}
 function topicOptions(subject,selected){
   return (S[subject]||[]).map(function(t){return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";}).join("");
 }
@@ -367,18 +544,26 @@ function nextTopic(subject){
   return x?x.topic:((S[subject]&&S[subject][0])||"Revision / practice");
 }
 function fixedTemplate(){
-  return [
-    {id:"ga",subject:"GA",start:"07:00",end:"09:00",minutes:120,type:"Study",topic:nextTopic("GA"),done:false,logged:false},
-    {id:"break1",subject:null,start:"09:00",end:"09:30",minutes:0,type:"Break",title:"🍳 Breakfast",done:false,logged:false},
-    {id:"quant",subject:"Quant",start:"09:30",end:"11:30",minutes:120,type:"Study",topic:nextTopic("Quant"),done:false,logged:false},
-    {id:"break2",subject:null,start:"11:30",end:"12:00",minutes:0,type:"Break",title:"☕ Break",done:false,logged:false},
-    {id:"reasoning",subject:"Reasoning",start:"12:00",end:"13:30",minutes:90,type:"Study",topic:nextTopic("Reasoning"),done:false,logged:false},
-    {id:"break3",subject:null,start:"13:30",end:"14:00",minutes:0,type:"Break",title:"🍱 Lunch",done:false,logged:false},
-    {id:"english",subject:"English",start:"14:00",end:"16:00",minutes:120,type:"Study",topic:nextTopic("English"),done:false,logged:false},
-    {id:"gym",subject:null,start:"16:00",end:"18:00",minutes:0,type:"Break",title:"🏋️ Gym / travel / recovery",done:false,logged:false},
-    {id:"break4",subject:null,start:"18:00",end:"18:30",minutes:0,type:"Break",title:"🚿 Shower + snack",done:false,logged:false},
-    {id:"recap",subject:null,start:"18:30",end:"19:00",minutes:30,type:"Recap",title:"🔄 Daily Recap",done:false,logged:false}
+  var chosen=(db.settings.routineSubjects||Object.keys(S).slice(0,4)).filter(function(s){return S[s];}).slice(0,4);
+  while(chosen.length<4){var more=Object.keys(S).filter(function(s){return chosen.indexOf(s)<0;});if(!more.length)break;chosen.push(more[0]);}
+  var slots=[
+    {start:"07:00",end:"09:00",minutes:120,type:"Study",emoji:"📚"},
+    {start:"09:30",end:"11:30",minutes:120,type:"Study",emoji:"📚"},
+    {start:"12:00",end:"13:30",minutes:90,type:"Study",emoji:"📚"},
+    {start:"14:00",end:"16:00",minutes:120,type:"Study",emoji:"📚"}
   ];
+  var tasks=[];
+  slots.forEach(function(slot,i){
+    var subject=chosen[i]||null;
+    tasks.push({id:"study"+i,subject:subject,start:slot.start,end:slot.end,minutes:slot.minutes,type:slot.type,topic:subject?nextTopic(subject):"",done:false,logged:false});
+    if(i===0)tasks.push({id:"break1",subject:null,start:"09:00",end:"09:30",minutes:0,type:"Break",title:"🍳 Breakfast",done:false,logged:false});
+    if(i===1)tasks.push({id:"break2",subject:null,start:"11:30",end:"12:00",minutes:0,type:"Break",title:"☕ Break",done:false,logged:false});
+    if(i===2)tasks.push({id:"break3",subject:null,start:"13:30",end:"14:00",minutes:0,type:"Break",title:"🍱 Lunch",done:false,logged:false});
+    if(i===3)tasks.push({id:"gym",subject:null,start:"16:00",end:"18:00",minutes:0,type:"Break",title:"🏃 Recovery / personal time",done:false,logged:false});
+  });
+  tasks.push({id:"break4",subject:null,start:"18:00",end:"18:30",minutes:0,type:"Break",title:"🚿 Reset + snack",done:false,logged:false});
+  tasks.push({id:"recap",subject:null,start:"18:30",end:"19:30",minutes:60,type:"Recap",title:"🔄 Daily Recap",done:false,logged:false});
+  return tasks;
 }
 function validPlan(tasks){
   return Array.isArray(tasks)&&tasks.length>0&&tasks.every(function(t){return t&&typeof t==="object"&&typeof t.type==="string"&&typeof t.start==="string"&&typeof t.end==="string"&&Number.isFinite(Number(t.minutes));});
@@ -876,7 +1061,7 @@ function analytics(p){
 }
 function backup(p){
   var cfg=firebaseConfig();
-  p.innerHTML="<div class='topline'><div><h1>Backup & Settings</h1><p class='muted page-sub'>Keep JSON backups, or sync the same tracker across your laptop, tablet and phone.</p></div><div class='topmeta'><span class='badge'>"+(firebaseAutoSync?"🔄 Cloud auto-sync ON":"💾 Local backup active")+"</span></div></div>"+
+  p.innerHTML="<div class='topline'><div><h1>Backup & Settings</h1><p class='muted page-sub'>Keep JSON backups, or sync all your MyTrack exam profiles across your laptop, tablet and phone.</p></div><div class='topmeta'><span class='badge'>"+(firebaseAutoSync?"🔄 Cloud auto-sync ON":"💾 Local backup active")+"</span></div></div>"+
   "<div class='card section'><div class='kicker'>💾 LOCAL BACKUP</div><p class='muted'>JSON export remains your offline safety net.</p><button id='export' class='btn'>Export JSON Backup</button> <input id='import' type='file' accept='.json'> <button id='restore' class='btn alt'>Restore Backup</button><div style='margin-top:14px'><label class='muted'>Daily target hours <input id='hours' type='number' min='1' max='24' value='"+db.settings.hours+"'></label> <button id='saveHours' class='btn alt'>Save</button></div></div>"+
   "<div class='card section cloud-card'><div class='kicker'>☁️ MULTI-DEVICE CLOUD SYNC</div><h2 style='margin:4px 0 0'>One tracker on every device</h2><p class='cloud-help'>Use one Google account with Firebase. Your tracker data is stored privately under your signed-in account, and Firestore Security Rules restrict access to your own user document.</p>"+
   "<div class='notice' style='margin-top:14px'><b>First setup:</b> create a Firebase project, register a Web App, enable Google sign-in and Cloud Firestore, then enter the Web App settings below.</div>"+
@@ -909,7 +1094,7 @@ function backup(p){
   refreshFirebaseAuth().then(function(){firebaseSetAccountStatus();if(firebaseUser)firebaseSetStatus("✅ Firebase account ready.","good");else if(cfg.projectId)firebaseSetStatus("Firebase settings saved. Sign in with Google to start syncing.","muted");else firebaseSetStatus("Enter your Firebase Web App settings to connect.","muted");});
 }
 
-function exportDB(){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="ssc-cgl-2027-backup-"+today()+".json";a.click();}
+function exportDB(){syncCurrentExamIntoBucket();var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="mytrack-backup-"+today()+".json";a.click();}
 function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{var incoming=JSON.parse(r.result);if(!incoming||!Array.isArray(incoming.topics)||!Array.isArray(incoming.study))throw new Error("invalid");db=incoming;normalizeDb();save();render();alert("Backup restored.");}catch(e){alert("Invalid backup file.");}};r.readAsText(f);}
 render();
 </script></body></html>
