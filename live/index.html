@@ -447,22 +447,8 @@ function streakBoxes(){
 function getActiveExam(){return db.exams&&db.exams[db.activeExamId]?db.exams[db.activeExamId]:null;}
 function activeExamName(){var e=getActiveExam();return e?e.name:"MyTrack";}
 function activeExamCode(){var e=getActiveExam();return e&&e.code?e.code:"";}
-function refreshExamSwitcher(){
-  var box=document.getElementById("examSwitcher");if(!box||!db.exams)return;
-  var ids=Object.keys(db.exams);
-  box.innerHTML="<div class='exam-switcher-label'>ACTIVE EXAM</div><select id='examQuickSelect'>"+ids.map(function(id){var e=db.exams[id];return "<option value='"+esc(id)+"' "+(id===db.activeExamId?"selected":"")+">"+esc(e.name)+"</option>";}).join("")+"</select>";
-  document.getElementById("examQuickSelect").addEventListener("change",function(){switchExam(this.value);});
-}
-function switchExam(id){
-  if(!db.exams[id]||id===db.activeExamId)return;
-  syncCurrentExamIntoBucket();
-  loadExamIntoWorking(id);
-  save();
-  refreshExamSwitcher();
-  updateAppChrome();
-  location.hash="dashboard";
-  render();
-}
+function refreshExamSwitcher(){var box=document.getElementById("examSwitcher");if(!box||!db.exams)return;box.innerHTML="<div class='exam-switcher-label'>FOCUS EXAM</div><div class='focus-exam-name'>"+esc(activeExamName())+"</div><div class='focus-exam-hint'>One exam only • change in My Exam</div>";}
+function switchExam(id){alert("MyTrack is in one-exam focus mode. Use My Exam → Change Exam.");}
 function updateAppChrome(){
   document.title=APP_NAME+" — "+activeExamName();
   var brand=document.querySelector(".brand");
@@ -550,21 +536,8 @@ function exams(p){
   document.getElementById("newExamProfile").addEventListener("click",function(){newExam();});
   document.getElementById("deleteExamProfile").addEventListener("click",function(){deleteExam();});
 }
-function newExam(){
-  var id="exam-"+Date.now(),e=newExamProfile(id,"New Exam",{"Subject 1":[],"Subject 2":[],"Subject 3":[]},{"hours":6,mockUnlockPct:0,routineSubjects:["Subject 1","Subject 2","Subject 3"]});
-  db.exams[id]=e;
-  syncCurrentExamIntoBucket();
-  loadExamIntoWorking(id);save();updateAppChrome();location.hash="exams";render();
-}
-function deleteExam(){
-  var ids=Object.keys(db.exams||{});
-  if(ids.length<2){alert("Keep at least one exam profile.");return;}
-  var current=getActiveExam();
-  if(!confirm("Delete "+current.name+"? This removes that exam's local/cloud workspace from this tracker."))return;
-  delete db.exams[db.activeExamId];
-  var next=Object.keys(db.exams)[0];
-  loadExamIntoWorking(next);save();updateAppChrome();location.hash="exams";render();
-}
+function newExam(){if(confirm("Start a new blank exam? Your current exam will be kept as a local backup, and only the new exam will remain active.")){createExamFromPreset({name:"New Exam",code:"CUSTOM",category:"Custom",hours:6,subjects:{"Subject 1":[],"Subject 2":[]}}, "New Exam");}}
+function deleteExam(){alert("MyTrack always keeps one active exam. Use Change Exam to replace it.");}
 function topicOptions(subject,selected){
   return (S[subject]||[]).map(function(t){return "<option value='"+esc(t)+"' "+(t===selected?"selected":"")+">"+esc(t)+"</option>";}).join("");
 }
