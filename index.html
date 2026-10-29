@@ -510,6 +510,8 @@ if(p.name==="Indian Coast Guard CGEPT — Navik (GD)"){s["Mathematics"]=SYLLABUS
 }
 applyPresetSyllabi();
 function presetExamByName(name){return PRESET_EXAMS.find(function(x){return x.name===name;})||null;}
+function hydrateActiveExamFromPresetIfEmpty(){var e=getActiveExam(),p=e&&presetExamByName(e.name);if(!e||!p)return;var empty=!Array.isArray(e.topics)||e.topics.length===0;if(empty){e.subjects=deepClone(p.subjects||{});e.topics=makeTopicsFromSubjects(e.subjects,e.id);loadExamIntoWorking(e.id);save();}}
+hydrateActiveExamFromPresetIfEmpty();
 function getActiveExam(){return db.exams&&db.exams[db.activeExamId]?db.exams[db.activeExamId]:null;}
 function activeExamName(){var e=getActiveExam();return e?e.name:"MyTrack";}
 function activeExamCode(){var e=getActiveExam();return e&&e.code?e.code:"";}
