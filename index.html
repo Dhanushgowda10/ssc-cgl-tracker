@@ -480,16 +480,102 @@ function parseTopicText(text){return String(text||"").split(/[\n,]+/).map(functi
 function examSubjectEditorRow(subject,topics,i){
   return "<div class='exam-subject-editor' data-i='"+i+"'><div class='grid two'><label class='muted'>Subject name<input class='exam-subject-name' value='"+esc(subject||"")+"' placeholder='e.g. Quantitative Aptitude'></label><button class='btn alt exam-remove-subject' type='button' data-i='"+i+"'>Remove subject</button></div><label class='muted'>Topics / chapters <textarea class='exam-topic-list' rows='4' placeholder='One topic per line or comma-separated'>"+esc((topics||[]).join("\n"))+"</textarea></label></div>";
 }
+
+var PRESET_EXAMS=[
+  {category:"SSC",name:"SSC CGL 2027",code:"CGL",hours:8,subjects:{
+    "Quantitative Aptitude":["Number System","Percentage","Ratio & Proportion","Average","Profit & Loss","Simple & Compound Interest","Time & Work","Time, Speed & Distance","Algebra","Geometry","Mensuration","Trigonometry","Data Interpretation"],
+    "English":["Noun","Pronoun","Verb","Adjective","Adverb","Articles","Prepositions","Tenses","Voice","Narration","Error Detection","Synonyms & Antonyms","One Word Substitution","Idioms & Phrases","Cloze Test","Reading Comprehension"],
+    "General Intelligence & Reasoning":["Analogy","Classification","Series","Coding-Decoding","Blood Relations","Direction Sense","Venn Diagrams","Syllogism","Statement & Conclusion","Ranking","Non-Verbal Reasoning","Mirror & Water Image","Paper Folding","Embedded Figures"],
+    "General Awareness":["Ancient History","Medieval History","Modern History","Indian Polity","Geography","Economics","General Science","Physics","Chemistry","Biology","Static GK","Current Affairs"]
+  }},
+  {category:"SSC",name:"SSC CHSL",code:"CHSL",hours:7,subjects:{
+    "Quantitative Aptitude":[],"English Language":[],"General Intelligence":[],"General Awareness":[]
+  }},
+  {category:"SSC",name:"SSC CPO",code:"CPO",hours:7,subjects:{
+    "Quantitative Aptitude":[],"General Intelligence & Reasoning":[],"English Comprehension":[],"General Knowledge & Awareness":[]
+  }},
+  {category:"SSC",name:"SSC MTS",code:"MTS",hours:6,subjects:{
+    "Numerical & Mathematical Ability":[],"Reasoning Ability & Problem Solving":[],"General Awareness":[],"English Language & Comprehension":[]
+  }},
+  {category:"SSC",name:"SSC GD Constable",code:"GD",hours:6,subjects:{
+    "General Intelligence & Reasoning":[],"General Knowledge & General Awareness":[],"Elementary Mathematics":[],"English / Hindi":[]
+  }},
+  {category:"SSC",name:"SSC JE",code:"JE",hours:7,subjects:{
+    "General Intelligence & Reasoning":[],"General Awareness":[],"General Engineering":[]
+  }},
+  {category:"SSC",name:"SSC Stenographer",code:"STENO",hours:6,subjects:{
+    "General Intelligence & Reasoning":[],"General Awareness":[],"English Language & Comprehension":[]
+  }},
+  {category:"SSC",name:"SSC Selection Post",code:"SELECTION",hours:6,subjects:{
+    "General Intelligence":[],"Quantitative Aptitude":[],"English Language":[],"General Awareness":[]
+  }},
+  {category:"UPSC",name:"UPSC Civil Services",code:"CSE",hours:8,subjects:{
+    "General Studies":["GS Paper I","GS Paper II","GS Paper III","GS Paper IV"],"CSAT":[],"Essay":[],"Optional Subject":[]
+  }},
+  {category:"UPSC",name:"UPSC NDA",code:"NDA",hours:7,subjects:{
+    "Mathematics":[],"General Ability Test":["English","General Knowledge"]
+  }},
+  {category:"UPSC",name:"UPSC CDS",code:"CDS",hours:7,subjects:{
+    "English":[],"General Knowledge":[],"Elementary Mathematics":[]
+  }},
+  {category:"UPSC",name:"UPSC CAPF",code:"CAPF",hours:7,subjects:{
+    "General Ability & Intelligence":[],"General Studies":[],"Essay":[],"Comprehension":[]
+  }},
+  {category:"Railways",name:"RRB NTPC",code:"NTPC",hours:7,subjects:{
+    "General Awareness":[],"Mathematics":[],"General Intelligence & Reasoning":[]
+  }},
+  {category:"Railways",name:"RRB Group D",code:"GROUP-D",hours:6,subjects:{
+    "General Science":[],"Mathematics":[],"General Intelligence & Reasoning":[],"General Awareness & Current Affairs":[]
+  }},
+  {category:"Railways",name:"RRB JE",code:"RRB-JE",hours:7,subjects:{
+    "Mathematics":[],"General Intelligence & Reasoning":[],"General Awareness":[],"General Science / Engineering":[]
+  }},
+  {category:"Defence",name:"AFCAT",code:"AFCAT",hours:6,subjects:{
+    "English":[],"General Awareness":[],"Numerical Ability":[],"Reasoning & Military Aptitude":[]
+  }},
+  {category:"Defence",name:"Indian Coast Guard",code:"ICG",hours:6,subjects:{
+    "English":[],"Reasoning":[],"Quantitative Aptitude":[],"General Awareness":[]
+  }}
+];
+function presetExamByName(name){
+  return PRESET_EXAMS.find(function(x){return x.name===name;})||null;
+}
+function createExamFromPreset(preset,customName){
+  var name=(customName||preset.name||"New Exam").trim();
+  var id="exam-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);
+  var e=newExamProfile(id,name,preset.subjects||{},{
+    hours:Number(preset.hours||8),mockUnlockPct:50,
+    routineSubjects:Object.keys(preset.subjects||{}).slice(0,4)
+  });
+  e.code=preset.code||"";
+  e.description="Starter profile for "+name+" • customize subjects and topics to match your target syllabus.";
+  e.presetCategory=preset.category||"Custom";
+  db.exams[id]=e;
+  syncCurrentExamIntoBucket();
+  loadExamIntoWorking(id);
+  save();
+  updateAppChrome();
+  location.hash="exams";
+  render();
+}
 function exams(p){
   var ids=Object.keys(db.exams||{}),current=getActiveExam();
   if(!current)return;
-  var rows=ids.map(function(id){var e=db.exams[id],t=(e.topics||[]).length;return "<div class='row'><div><b>"+esc(e.name)+"</b><div class='muted' style='font-size:12px'>"+esc(e.code||"Custom exam")+" • "+t+" topics • "+Number((e.settings&&e.settings.hours)||8)+"h target</div></div><button class='btn alt exam-select' data-id='"+esc(id)+"'>"+(id===db.activeExamId?"Active":"Switch")+"</button></div>";}).join("");
+  var rows=ids.map(function(id){var ex=db.exams[id],t=(ex.topics||[]).length;return "<div class='row exam-list-row'><div style='min-width:0'><b>"+esc(ex.name)+"</b><div class='muted' style='font-size:12px'>"+esc(ex.code||"Custom exam")+" • "+t+" topics • "+Number((ex.settings&&ex.settings.hours)||8)+"h target</div></div><button class='btn alt exam-select' data-id='"+esc(id)+"'>"+(id===db.activeExamId?"Active":"Switch")+"</button></div>";}).join("");
   var subjects=Object.keys(current.subjects||{});
-  p.innerHTML="<div class='topline'><div><h1>My Exams</h1><p class='muted page-sub'>Build a separate preparation workspace for every exam you are targeting.</p></div><div class='topmeta'><span class='badge'>🎓 "+ids.length+" exam profile"+(ids.length===1?"":"s")+"</span><span class='badge'>📚 "+current.topics.length+" topics in active exam</span></div></div>"+
+  var categories=[...new Set(PRESET_EXAMS.map(function(x){return x.category;}))];
+  var options=PRESET_EXAMS.map(function(x){return "<option value='"+esc(x.name)+"'>"+esc(x.category)+" • "+esc(x.name)+"</option>";}).join("");
+  p.innerHTML="<div class='topline'><div><h1>My Exams</h1><p class='muted page-sub'>Pick an exam, type your own, or customize any starter profile. Every exam keeps its own preparation data.</p></div><div class='topmeta'><span class='badge'>🎓 "+ids.length+" exam profile"+(ids.length===1?"":"s")+"</span><span class='badge'>📚 "+current.topics.length+" topics in active exam</span></div></div>"+
+  "<div class='card section exam-picker'><div class='kicker'>🚀 START A NEW EXAM</div><h2 style='margin:5px 0 4px'>What are you preparing for?</h2><p class='muted'>Choose a preloaded Central Government / competitive exam or type anything — MyTrack will create a separate workspace for it.</p>"+
+  "<div class='grid three' style='margin-top:13px'><label class='muted'>Search / type exam name<input id='customExamName' list='examPresetList' placeholder='e.g. RRB ALP, KPSC, CAT, GATE…'><datalist id='examPresetList'>"+PRESET_EXAMS.map(function(x){return "<option value='"+esc(x.name)+"'>";}).join("")+"</datalist></label>"+
+  "<label class='muted'>Starter preset<select id='examPresetSelect'><option value=''>Select a preset…</option>"+options+"</select></label>"+
+  "<div style='display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap'><button id='createSelectedExam' class='btn' type='button'>＋ Create Exam</button><button id='blankExam' class='btn alt' type='button'>Create Blank</button></div></div>"+
+  "<div id='presetPreview' class='exam-preset-preview' style='margin-top:13px'><span class='muted'>Select a preset to preview its starter subjects.</span></div></div>"+
   "<div class='grid two section'><div class='card'><div class='kicker'>ACTIVE EXAM</div><h2 style='margin:4px 0 0'>"+esc(current.name)+"</h2><p class='muted'>Switching exams keeps the study log, syllabus, PYQs, revisions, mocks and planner data separated.</p>"+rows+"</div>"+
-  "<div class='card'><div class='kicker'>CREATE / EDIT PROFILE</div><div class='grid two'><label class='muted'>Exam name<input id='examName' value='"+esc(current.name)+"' placeholder='e.g. UPSC CSE 2027'></label><label class='muted'>Short code<input id='examCode' value='"+esc(current.code||"")+"' placeholder='e.g. UPSC'></label></div><label class='muted'>Description<input id='examDescription' value='"+esc(current.description||"")+"' placeholder='What are you preparing for?'></label><div class='grid three'><label class='muted'>Daily target hours<input id='examHours' type='number' min='1' max='24' step='0.5' value='"+Number((current.settings&&current.settings.hours)||8)+"'></label><label class='muted'>Mock unlock %<input id='mockUnlockPct' type='number' min='0' max='100' value='"+Number((current.settings&&current.settings.mockUnlockPct)||50)+"'></label><label class='muted'>Planner subjects<input id='routineSubjects' value='"+esc(((current.settings&&current.settings.routineSubjects)||Object.keys(current.subjects||{}).slice(0,4)).join(", "))+"' placeholder='Subject 1, Subject 2, Subject 3'></label></div><div id='examSubjectsEditor'>"+subjects.map(function(s,i){return examSubjectEditorRow(s,current.subjects[s],i);}).join("")+"</div><div class='study-form-actions' style='margin-top:10px'><button id='addExamSubject' class='btn alt' type='button'>+ Add subject</button><button id='saveExamProfile' class='btn' type='button'>💾 Save Exam Profile</button><button id='newExamProfile' class='btn alt' type='button'>＋ New Blank Exam</button></div></div></div>"+
-  "<div class='notice section'>💡 <b>Customization:</b> subjects and topics are completely editable. You can use MyTrack for SSC, UPSC, banking, railways, state PSC, teaching, entrance exams, or your own study plan.</div>"+
+  "<div class='card'><div class='kicker'>✏️ EDIT ACTIVE EXAM</div><div class='grid two'><label class='muted'>Exam name<input id='examName' value='"+esc(current.name)+"' placeholder='e.g. UPSC CSE 2027'></label><label class='muted'>Short code<input id='examCode' value='"+esc(current.code||"")+"' placeholder='e.g. UPSC'></label></div><label class='muted'>Description<input id='examDescription' value='"+esc(current.description||"")+"' placeholder='What are you preparing for?'></label><div class='grid three'><label class='muted'>Daily target hours<input id='examHours' type='number' min='1' max='24' step='0.5' value='"+Number((current.settings&&current.settings.hours)||8)+"'></label><label class='muted'>Mock unlock %<input id='mockUnlockPct' type='number' min='0' max='100' value='"+Number((current.settings&&current.settings.mockUnlockPct)==null?50:(current.settings&&current.settings.mockUnlockPct))+"'></label><label class='muted'>Planner subjects<input id='routineSubjects' value='"+esc(((current.settings&&current.settings.routineSubjects)||Object.keys(current.subjects||{}).slice(0,4)).join(", "))+"' placeholder='Subject 1, Subject 2, Subject 3'></label></div><div id='examSubjectsEditor'>"+subjects.map(function(s,i){return examSubjectEditorRow(s,current.subjects[s],i);}).join("")+"</div><div class='study-form-actions' style='margin-top:10px'><button id='addExamSubject' class='btn alt' type='button'>+ Add subject</button><button id='saveExamProfile' class='btn' type='button'>💾 Save Exam Profile</button><button id='newExamProfile' class='btn alt' type='button'>＋ New Blank Exam</button></div></div></div>"+
+  "<div class='notice section'>💡 <b>Central Government starter profiles:</b> SSC, UPSC, Railways and Defence presets are included as starting points. They are not locked official syllabi — edit the subjects/topics to match the exact notification or your coaching plan.</div>"+
   "<div class='card section'><div class='kicker'>DANGER ZONE</div><p class='muted'>Deleting an exam removes its cloud/local workspace from the current tracker. Export a JSON backup first.</p><button id='deleteExamProfile' class='btn alt danger-btn' type='button' "+(ids.length<2?"disabled":"")+">Delete active exam</button></div>";
+
   function collectSubjects(){
     var map={},ok=true;
     p.querySelectorAll(".exam-subject-editor").forEach(function(row){
@@ -507,15 +593,41 @@ function exams(p){
     var newTopics=makeTopicsFromSubjects(newSubjects,id).map(function(t){return oldByKey[t.s+"|"+t.topic]?Object.assign({},oldByKey[t.s+"|"+t.topic],t):t;});
     db.topics=newTopics;S=deepClone(newSubjects);
     db.settings.hours=Number(document.getElementById("examHours").value)||8;
-    db.settings.mockUnlockPct=Math.max(0,Math.min(100,Number(document.getElementById("mockUnlockPct").value)||50));
-    db.settings.routineSubjects=parseTopicText(document.getElementById("routineSubjects").value);
+    db.settings.mockUnlockPct=Math.max(0,Math.min(100,Number(document.getElementById("mockUnlockPct").value)===""?50:Number(document.getElementById("mockUnlockPct").value)));
+    db.settings.routineSubjects=parseTopicText(document.getElementById("routineSubjects").value).filter(function(s){return S[s];});
     db.settings.plannerVersion="topic-select-v5";
+    db.exams[id].subjects=deepClone(newSubjects);
     db.exams[id].name=document.getElementById("examName").value.trim()||"Untitled Exam";
     db.exams[id].code=document.getElementById("examCode").value.trim();
     db.exams[id].description=document.getElementById("examDescription").value.trim();
     save();updateAppChrome();render();alert("Exam profile saved.");
   }
+
+  function previewPreset(name){
+    var preview=document.getElementById("presetPreview"),preset=presetExamByName(name);
+    if(!preset){preview.innerHTML="<span class='muted'>Select a preset to preview its starter subjects.</span>";return;}
+    var subNames=Object.keys(preset.subjects||{});
+    preview.innerHTML="<div class='preset-preview-head'><b>"+esc(preset.category)+" • "+esc(preset.name)+"</b><span class='badge'>"+preset.hours+"h starter target</span></div><div class='preset-subjects'>"+subNames.map(function(s){return "<span class='badge'>"+esc(s)+"</span>";}).join("")+"</div><div class='muted' style='font-size:11px;margin-top:8px'>You can rename subjects, delete them, or add your own after creation.</div>";
+  }
+
   p.querySelectorAll(".exam-select").forEach(function(b){b.addEventListener("click",function(){switchExam(b.dataset.id);});});
+  document.getElementById("examPresetSelect").addEventListener("change",function(){
+    var preset=presetExamByName(this.value);
+    if(preset){document.getElementById("customExamName").value=preset.name;previewPreset(preset.name);}
+    else previewPreset("");
+  });
+  document.getElementById("customExamName").addEventListener("input",function(){
+    var preset=presetExamByName(this.value.trim());
+    if(preset){document.getElementById("examPresetSelect").value=preset.name;previewPreset(preset.name);}
+    else{document.getElementById("examPresetSelect").value="";previewPreset("");}
+  });
+  document.getElementById("createSelectedExam").addEventListener("click",function(){
+    var typed=document.getElementById("customExamName").value.trim(),preset=presetExamByName(document.getElementById("examPresetSelect").value)||presetExamByName(typed);
+    if(preset){createExamFromPreset(preset,typed||preset.name);return;}
+    if(!typed){alert("Type an exam name or choose a preset.");return;}
+    createExamFromPreset({name:typed,code:"CUSTOM",category:"Custom",hours:Number(db.settings.hours||8),subjects:{"Subject 1":[],"Subject 2":[]}},typed);
+  });
+  document.getElementById("blankExam").addEventListener("click",function(){newExam();});
   document.getElementById("addExamSubject").addEventListener("click",function(){var wrap=document.getElementById("examSubjectsEditor");wrap.insertAdjacentHTML("beforeend",examSubjectEditorRow("New Subject",[],wrap.querySelectorAll(".exam-subject-editor").length));bindSubjectRemovers();});
   function bindSubjectRemovers(){p.querySelectorAll(".exam-remove-subject").forEach(function(b){b.onclick=function(){b.closest(".exam-subject-editor").remove();};});}
   bindSubjectRemovers();
