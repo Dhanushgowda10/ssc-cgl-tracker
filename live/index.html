@@ -328,6 +328,9 @@ function save(){
     var m=firebaseMeta();m.localDirty=true;setFirebaseMeta(m);scheduleFirebasePush();
   }
 }
+normalizeDb();
+save();
+updateAppChrome();
 function uid(prefix){return String(prefix||"id")+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,8);}
 function localISO(d){
   d=d||new Date();
@@ -1007,8 +1010,8 @@ function pyq(p){
   loadSelectedValues();
 }
 function mocks(p){
-  var ok=mockUnlocked();
-  p.innerHTML="<h1>Mock Tests</h1><div class=badge>"+(ok?"🎯 50% syllabus reached — full mocks enabled":"🔒 Full mocks unlock after 50% syllabus completion")+"</div>"+
+  var ok=mockUnlocked(),unlock=Number(db.settings.mockUnlockPct==null?50:db.settings.mockUnlockPct);
+  p.innerHTML="<h1>Mock Tests</h1><div class=badge>"+(ok?"🎯 "+unlock+"% syllabus reached — full mocks enabled":"🔒 Full mocks unlock after "+unlock+"% syllabus completion")+"</div>"+
   (ok?"<div class=card style='margin-top:12px'><form id=mockForm><input name=date type=date value="+today()+" required><input name=name placeholder='Mock name' required><input name=score type=number placeholder='Score' required><input name=total type=number value=200><button class=btn>Add Mock</button></form></div>":"")+
   "<div class=card style='margin-top:12px'><table><tr><th>Date</th><th>Mock</th><th>Score</th><th>%</th></tr>"+db.mocks.slice().reverse().map(function(x){return "<tr><td>"+x.date+"</td><td>"+esc(x.name)+"</td><td>"+x.score+"/"+x.total+"</td><td>"+Math.round(x.score/x.total*100)+"%</td></tr>";}).join("")+"</table></div>";
   if(ok)document.getElementById("mockForm").addEventListener("submit",function(e){e.preventDefault();var f=new FormData(e.target);db.mocks.push({date:f.get("date"),name:f.get("name"),score:f.get("score"),total:f.get("total")});save();render();});
@@ -1095,6 +1098,6 @@ function backup(p){
 }
 
 function exportDB(){syncCurrentExamIntoBucket();var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="mytrack-backup-"+today()+".json";a.click();}
-function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{var incoming=JSON.parse(r.result);if(!incoming||!Array.isArray(incoming.topics)||!Array.isArray(incoming.study))throw new Error("invalid");db=incoming;normalizeDb();save();render();alert("Backup restored.");}catch(e){alert("Invalid backup file.");}};r.readAsText(f);}
+function importDB(){var f=document.getElementById("import").files[0];if(!f)return alert("Select a backup file.");var r=new FileReader();r.onload=function(){try{var incoming=JSON.parse(r.result);if(incoming&&incoming.exams&&incoming.activeExamId){db=incoming;normalizeDb();save();updateAppChrome();render();alert("MyTrack backup restored.");return;}if(incoming&&Array.isArray(incoming.topics)&&Array.isArray(incoming.study)){db=migrateLegacyDb(incoming);normalizeDb();save();updateAppChrome();render();alert("Legacy backup migrated into MyTrack.");return;}throw new Error("invalid");}catch(e){alert("Invalid MyTrack backup file.");}};r.readAsText(f);}
 render();
 </script></body></html>
