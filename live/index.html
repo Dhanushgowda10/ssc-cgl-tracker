@@ -313,14 +313,7 @@ function normalizeExamBucket(e,id){
   Object.keys(e.plans).forEach(function(d){(e.plans[d]||[]).forEach(function(t){t.examId=id;});});
   e.mocks.forEach(function(x){x.examId=id;});
 }
-function normalizeDb(){
-  if(!db.exams||typeof db.exams!=="object")db=migrateLegacyDb(db||{});
-  var ids=Object.keys(db.exams);
-  if(!ids.length){db=migrateLegacyDb({});ids=Object.keys(db.exams);}
-  ids.forEach(function(id){normalizeExamBucket(db.exams[id],id);});
-  if(!db.activeExamId||!db.exams[db.activeExamId])db.activeExamId=ids[0];
-  loadExamIntoWorking(db.activeExamId);
-}
+function normalizeDb(){if(!db.exams||typeof db.exams!=="object")db=migrateLegacyDb(db||{});var ids=Object.keys(db.exams);if(!ids.length){db=migrateLegacyDb({});ids=Object.keys(db.exams);}if(ids.length>1){var keep=db.activeExamId&&db.exams[db.activeExamId]?db.activeExamId:ids[0],arch={};try{arch=JSON.parse(localStorage.getItem("mytrack_archived_exams")||"{}")||{};}catch(e){arch={};}ids.forEach(function(id){if(id!==keep)arch[id]=db.exams[id];});localStorage.setItem("mytrack_archived_exams",JSON.stringify(arch));var one={};one[keep]=db.exams[keep];db.exams=one;db.activeExamId=keep;}normalizeExamBucket(db.exams[db.activeExamId],db.activeExamId);loadExamIntoWorking(db.activeExamId)}
 function save(){
   syncCurrentExamIntoBucket();
   localStorage.setItem(STORAGE_KEY,JSON.stringify(db));
@@ -478,24 +471,7 @@ function updateAppChrome(){
 }
 function parseTopicText(text){return String(text||"").split(/[\n,]+/).map(function(x){return x.trim();}).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i;});}
 function examSubjectEditorRow(subject,topics,i){return "<div class='exam-subject-editor' data-i='"+i+"'><div class='grid two'><label class='muted'>Subject name<input class='exam-subject-name' value='"+esc(subject||"")+"' placeholder='Subject name'></label><div class='subject-fixed-badge'>🔒 Subject</div></div><label class='muted'>Syllabus topics / chapters<textarea class='exam-topic-list' rows='5'>"+esc((topics||[]).join("\n"))+"</textarea></label><div class='add-topic-line'><input class='new-topic-input' placeholder='Add extra topic / chapter'><button class='btn alt add-topic-btn' type='button'>＋ Add topic</button></div></div>"}
-function createExamFromPreset(preset,customName){
-  var name=(customName||preset.name||"New Exam").trim();
-  var id="exam-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);
-  var e=newExamProfile(id,name,preset.subjects||{},{
-    hours:Number(preset.hours||8),mockUnlockPct:50,
-    routineSubjects:Object.keys(preset.subjects||{}).slice(0,4)
-  });
-  e.code=preset.code||"";
-  e.description="Starter profile for "+name+" • customize subjects and topics to match your target syllabus.";
-  e.presetCategory=preset.category||"Custom";
-  db.exams[id]=e;
-  syncCurrentExamIntoBucket();
-  loadExamIntoWorking(id);
-  save();
-  updateAppChrome();
-  location.hash="exams";
-  render();
-}
+function createExamFromPreset(preset,customName){var name=(customName||preset.name||"New Exam").trim(),current=getActiveExam();if(current)localStorage.setItem("mytrack_previous_exam_backup",JSON.stringify({savedAt:Date.now(),exam:deepClone(current)}));var id="exam-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),e=newExamProfile(id,name,preset.subjects||{},{hours:Number(preset.hours||8),mockUnlockPct:50,routineSubjects:Object.keys(preset.subjects||{}).slice(0,4)});e.code=preset.code||"";e.description="Starter syllabus for "+name+" • customize by adding extra topics.";e.presetCategory=preset.category||"Custom";db.exams={};db.exams[id]=e;db.activeExamId=id;loadExamIntoWorking(id);save();updateAppChrome();location.hash="dashboard";render();}
 function exams(p){
   var ids=Object.keys(db.exams||{}),current=getActiveExam();
   if(!current)return;
